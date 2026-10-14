@@ -4,10 +4,12 @@ Ejecutar:  uvicorn app.main:app --reload --port 8000
 Swagger:   http://localhost:8000/docs
 """
 import logging
+from pathlib import Path
 
 import pymysql
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.db.conexion import ErrorBaseDatos
 from app.errores import ErrorNegocio
@@ -40,10 +42,18 @@ app = FastAPI(
 for r in (vehiculos, comandos, estado, historial, demos, ws_router):
     app.include_router(r)
 
+# Control remoto web (mismo origen que la API: http://localhost:8000/control/)
+app.mount("/control", StaticFiles(directory=Path(__file__).parent / "web", html=True), name="control")
+
+
+@app.get("/control", include_in_schema=False)
+def control():
+    return RedirectResponse("/control/")
+
 
 @app.get("/", tags=["Vehículos"], summary="Comprobar que la API responde")
 def raiz():
-    return {"api": "Vehículo IoT", "estado": "en línea", "docs": "http://localhost:8000/docs"}
+    return {"api": "Vehículo IoT", "estado": "en línea", "docs": "http://localhost:8000/docs", "control": "http://localhost:8000/control/"}
 
 
 @app.exception_handler(ErrorNegocio)
