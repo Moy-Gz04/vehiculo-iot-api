@@ -1,0 +1,33 @@
+{
+  "client": "Thunder Client",
+  "collectionName": "Practica 2.5 - Vehiculo IoT",
+  "dateExported": "2026-10-14T00:00:00.000Z",
+  "version": "1.2",
+  "folders": [],
+  "requests": [
+    {
+      "_id": "p25-post-movimiento", "colId": "p25", "containerId": "", "sortNum": 10000,
+      "name": "Prueba 1 - POST movimiento individual",
+      "url": "http://localhost:8000/vehiculos/1/movimientos", "method": "POST",
+      "created": "2026-10-14T00:00:00.000Z", "modified": "2026-10-14T00:00:00.000Z",
+      "headers": [{ "name": "X-API-Key", "value": "clave-local-2-5" }],
+      "params": [], "tests": [],
+      "body": { "type": "json", "raw": "{\n  \"id_comando\": 5,\n  \"origen\": \"THUNDER-CLIENT\"\n}", "form": [] }
+    },
+    {
+      "_id": "p25-get-historial", "colId": "p25", "containerId": "", "sortNum": 20000,
+      "name": "Prueba 2 - GET historial (max 10)",
+      "url": "http://localhost:8000/vehiculos/1/historial", "method": "GET",
+      "created": "2026-10-14T00:00:00.000Z", "modified": "2026-10-14T00:00:00.000Z",
+      "headers": [], "params": [], "tests": []
+    },
+    {
+      "_id": "p25-post-demo", "colId": "p25", "containerId": "", "sortNum": 30000,
+      "name": "Prueba 3 - POST iniciar DEMO (con el WebSocket abierto)",
+      "url": "http://localhost:8000/vehiculos/1/demos/1/iniciar", "method": "POST",
+      "created": "2026-10-14T00:00:00.000Z", "modified": "2026-10-14T00:00:00.000Z",
+      "headers": [{ "name": "X-API-Key", "value": "clave-local-2-5" }],
+      "params": [], "tests": []
+    }
+  ]
+}
