@@ -2,123 +2,161 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#16181B">
-  <title>Control Vehículo IoT</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%227%22 fill=%22%23F2B705%22/%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%227%22 fill=%22%23E5484D%22 stroke=%22%2316181B%22 stroke-width=%222%22/%3E%3C/svg%3E">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#05070C">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Control Excavadora IoT</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%228%22 fill=%22%23D9DDE4%22/%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%228%22 fill=%22%232250D9%22/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
-  <link rel="stylesheet" href="/control/app.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+  <link rel="stylesheet" href="/control/app.css?v=4">
 </head>
-<body>
-  <header class="barra">
-    <div class="marca">
-      <span class="marca-placa">IoT</span>
-      <div>
-        <h1 id="nombre-vehiculo">Vehículo</h1>
-        <p class="sub" id="modelo-vehiculo">Conectando…</p>
+<body data-pantalla="login" data-control="rc" data-orient="h">
+
+  <!-- ===================== LOGIN ===================== -->
+  <section class="pantalla login" id="pantalla-login" aria-labelledby="login-titulo">
+    <form class="login-tarjeta" id="form-login" autocomplete="off">
+      <div class="login-marca">
+        <span class="login-logo" aria-hidden="true"><i></i></span>
+        <div>
+          <h1 id="login-titulo">Excavadora IoT</h1>
+          <p>Centro de control remoto</p>
+        </div>
       </div>
-    </div>
-    <div class="barra-der">
-      <label class="selector" for="vehiculo">
-        <span>Unidad</span>
-        <select id="vehiculo"></select>
+      <label class="campo" for="login-clave">
+        <span>Clave de acceso</span>
+        <input id="login-clave" type="password" placeholder="X-API-Key" required autocomplete="current-password">
       </label>
-      <button type="button" class="btn-icono" id="btn-ajustes" aria-label="Ajustes de acceso">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>
+      <label class="campo" for="login-origen">
+        <span>Nombre del operador</span>
+        <input id="login-origen" type="text" maxlength="30" placeholder="WEB-CONTROL">
+      </label>
+      <p class="login-error" id="login-error" role="alert"></p>
+      <button type="submit" class="btn-azul" id="login-entrar">Entrar</button>
+      <p class="login-nota">La clave es la variable <code>API_KEY</code> del servidor. Se guarda solo en este dispositivo.</p>
+    </form>
+  </section>
+
+  <!-- ===================== SELECTOR ===================== -->
+  <section class="pantalla selector" id="pantalla-selector" aria-labelledby="sel-titulo">
+    <header class="selector-cab">
+      <h1 id="sel-titulo">Elige tu control</h1>
+      <button type="button" class="btn-texto" data-accion="salir">Cerrar sesión</button>
+    </header>
+    <div class="selector-opciones">
+      <button type="button" class="opcion" data-elegir="rc">
+        <span class="mini mini-rc" aria-hidden="true"><i class="ant"></i><i class="pad"></i><i class="pad d"></i><i class="pant"></i></span>
+        <strong>RC Clásico</strong>
+        <span class="opcion-modo">Un pulso</span>
+        <p>Tocas un botón y la excavadora sigue moviéndose hasta que eliges otra acción o presionas <b>ALTO</b>.</p>
+      </button>
+      <button type="button" class="opcion" data-elegir="pad">
+        <span class="mini mini-pad" aria-hidden="true"><i class="pad"></i><i class="bot"></i><i class="pant"></i></span>
+        <strong>Gamepad</strong>
+        <span class="opcion-modo">Mantener presionado</span>
+        <p>Se mueve solo mientras mantienes el botón presionado; al soltarlo se detiene.</p>
       </button>
     </div>
-  </header>
+  </section>
 
-  <main class="tablero">
-    <!-- Telemetría -->
-    <section class="panel telemetria" aria-label="Estado del vehículo">
-      <div class="lectura principal">
-        <span class="etq">Último comando</span>
-        <strong id="comando-actual">—</strong>
-        <span class="codigo">código <b id="codigo-actual">—</b></span>
-      </div>
-      <div class="lecturas">
-        <div class="lectura"><span class="etq">Enlace API</span><span class="pill" id="pill-ws" data-estado="off">Sin enlace</span></div>
-        <div class="lectura"><span class="etq">Vehículo</span><span class="pill" id="pill-conectado" data-estado="off">Desconectado</span></div>
-        <div class="lectura"><span class="etq">Actualizado</span><span class="dato" id="hora-actual">—</span></div>
-      </div>
-    </section>
+  <!-- ===================== CONTROL ===================== -->
+  <section class="pantalla control" id="pantalla-control" aria-label="Control remoto">
+    <div class="escena" id="escena">
+      <header class="barra">
+        <button type="button" class="chip" data-accion="cambiar" aria-label="Cambiar de control">
+          <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg><span>Controles</span>
+        </button>
+        <label class="chip chip-select" for="vehiculo"><span class="sr">Unidad</span><select id="vehiculo"></select></label>
+        <button type="button" class="chip" data-accion="girar" aria-label="Girar el control">
+          <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 9M20 4v5h-5M20 12a8 8 0 0 1-13.7 5.6L4 15M4 20v-5h5"/></svg><span id="txt-girar">Vertical</span>
+        </button>
+        <button type="button" class="chip" data-accion="hoja" data-tab="demos" aria-label="Rutinas y bitácora">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Menú</span>
+        </button>
+      </header>
 
-    <!-- Mando -->
-    <section class="panel mando" aria-label="Mando de movimiento">
-      <h2>Tracción</h2>
-      <div class="cruceta" id="cruceta">
-        <button type="button" class="tecla t-arriba" data-cmd="AVANZAR" aria-label="Avanzar"><svg viewBox="0 0 24 24"><path d="M12 5l7 9H5z"/></svg><span>Avanzar</span></button>
-        <button type="button" class="tecla t-izq" data-cmd="GIRAR_IZQUIERDA" aria-label="Girar a la izquierda"><svg viewBox="0 0 24 24"><path d="M5 12l9-7v14z"/></svg><span>Izq.</span></button>
-        <button type="button" class="tecla t-alto" data-cmd="DETENER" aria-label="Detener"><span class="alto-txt">ALTO</span></button>
-        <button type="button" class="tecla t-der" data-cmd="GIRAR_DERECHA" aria-label="Girar a la derecha"><svg viewBox="0 0 24 24"><path d="M19 12l-9 7V5z"/></svg><span>Der.</span></button>
-        <button type="button" class="tecla t-abajo" data-cmd="RETROCEDER" aria-label="Retroceder"><svg viewBox="0 0 24 24"><path d="M12 19l-7-9h14z"/></svg><span>Atrás</span></button>
-      </div>
-      <p class="pista">Teclado: flechas para moverte · espacio para detener</p>
-    </section>
+      <div class="remoto" id="remoto">
+        <i class="antena" aria-hidden="true"><b></b></i>
+        <div class="carcasa">
+          <span class="led" id="led" aria-hidden="true"></span>
+          <span class="marca-control" id="marca-control">RC·CLÁSICO</span>
 
-    <section class="panel herramienta" aria-label="Brazo y pala">
-      <h2>Brazo y pala</h2>
-      <div class="pares">
-        <div class="par">
-          <span class="etq">Brazo</span>
-          <button type="button" class="tecla chica" data-cmd="SUBIR_BRAZO">Subir</button>
-          <button type="button" class="tecla chica" data-cmd="BAJAR_BRAZO">Bajar</button>
+          <!-- Pantalla LCD -->
+          <div class="lcd" id="lcd" aria-live="polite">
+            <div class="lcd-fila"><span id="lcd-enlace">SIN ENLACE</span><span id="lcd-modo">PULSO</span></div>
+            <div class="lcd-cmd" id="lcd-cmd">—</div>
+            <div class="lcd-fila"><span id="lcd-info">LISTO</span><span id="lcd-hora">--:--</span></div>
+            <div class="lcd-barra"><i id="lcd-barra"></i></div>
+          </div>
+
+          <!-- Tracción -->
+          <div class="grupo grupo-traccion">
+            <span class="grupo-titulo">Tracción</span>
+            <div class="cruz">
+              <button type="button" class="tecla t-arr" data-cmd="AVANZAR" aria-label="Avanzar"><svg viewBox="0 0 24 24"><path d="M12 5l7 9H5z"/></svg></button>
+              <button type="button" class="tecla t-izq" data-cmd="GIRAR_IZQUIERDA" aria-label="Girar a la izquierda"><svg viewBox="0 0 24 24"><path d="M5 12l9-7v14z"/></svg></button>
+              <span class="cruz-centro" aria-hidden="true"></span>
+              <button type="button" class="tecla t-der" data-cmd="GIRAR_DERECHA" aria-label="Girar a la derecha"><svg viewBox="0 0 24 24"><path d="M19 12l-9 7V5z"/></svg></button>
+              <button type="button" class="tecla t-aba" data-cmd="RETROCEDER" aria-label="Retroceder"><svg viewBox="0 0 24 24"><path d="M12 19l-7-9h14z"/></svg></button>
+            </div>
+          </div>
+
+          <!-- Centro -->
+          <div class="grupo grupo-centro">
+            <button type="button" class="alto" data-cmd="DETENER" aria-label="Alto: detener todo"><span>ALTO</span></button>
+            <div class="mini-botones">
+              <button type="button" class="pildora" data-accion="hoja" data-tab="demos">DEMO</button>
+              <button type="button" class="pildora" data-accion="hoja" data-tab="historial">LOG</button>
+            </div>
+          </div>
+
+          <!-- Brazo y cabina -->
+          <div class="grupo grupo-brazo">
+            <span class="grupo-titulo">Brazo · Cabina</span>
+            <div class="cruz cruz-brazo">
+              <button type="button" class="tecla b-arr" data-cmd="SUBIR_BRAZO" aria-label="Subir brazo"><svg viewBox="0 0 24 24"><path d="M12 5l7 9H5z"/></svg><em>SUBIR</em></button>
+              <button type="button" class="tecla b-izq" data-cmd="ROTAR_IZQUIERDA" aria-label="Rotar cabina a la izquierda"><svg viewBox="0 0 24 24"><path d="M4 12a7 7 0 0 1 12-5l2 2M18 4v5h-5"/></svg><em>ROT</em></button>
+              <span class="cruz-centro" aria-hidden="true"></span>
+              <button type="button" class="tecla b-der" data-cmd="ROTAR_DERECHA" aria-label="Rotar cabina a la derecha"><svg viewBox="0 0 24 24"><path d="M20 12a7 7 0 0 0-12-5L6 9M6 4v5h5"/></svg><em>ROT</em></button>
+              <button type="button" class="tecla b-aba" data-cmd="BAJAR_BRAZO" aria-label="Bajar brazo"><svg viewBox="0 0 24 24"><path d="M12 19l-7-9h14z"/></svg><em>BAJAR</em></button>
+            </div>
+          </div>
+
+          <!-- Pala (si el vehículo la tiene) -->
+          <div class="hombros">
+            <button type="button" class="hombro" data-cmd="ABRIR_PALA">Pala abrir</button>
+            <button type="button" class="hombro" data-cmd="CERRAR_PALA">Pala cerrar</button>
+          </div>
         </div>
-        <div class="par">
-          <span class="etq">Pala</span>
-          <button type="button" class="tecla chica" data-cmd="ABRIR_PALA">Abrir</button>
-          <button type="button" class="tecla chica" data-cmd="CERRAR_PALA">Cerrar</button>
-        </div>
       </div>
-      <div class="extras" id="extras" hidden>
-        <span class="etq">Otros comandos</span>
-        <div class="extras-lista" id="extras-lista"></div>
-      </div>
-    </section>
+      <p class="ayuda" id="ayuda">Toca una acción: la excavadora sigue hasta que eliges otra o presionas ALTO.</p>
+    </div>
+  </section>
 
-    <!-- DEMO -->
-    <section class="panel demos" aria-label="Rutinas DEMO">
-      <div class="panel-cab">
-        <h2>Rutinas DEMO</h2>
-        <button type="button" class="btn-cancelar" id="btn-cancelar" hidden>Cancelar DEMO</button>
+  <!-- ===================== HOJA: DEMO / HISTORIAL ===================== -->
+  <div class="hoja-fondo" id="hoja-fondo" hidden></div>
+  <aside class="hoja" id="hoja" hidden aria-label="Rutinas y bitácora">
+    <div class="hoja-cab">
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" class="tab" data-tab="demos" aria-selected="true">Rutinas DEMO</button>
+        <button type="button" role="tab" class="tab" data-tab="historial" aria-selected="false">Historial</button>
+        <button type="button" role="tab" class="tab" data-tab="eventos" aria-selected="false">En vivo</button>
       </div>
-      <div class="progreso" id="progreso" hidden>
-        <div class="progreso-txt"><span id="progreso-nombre">—</span><span id="progreso-num">0 / 0</span></div>
-        <div class="progreso-barra"><i id="progreso-barra"></i></div>
-        <ol class="pasos" id="pasos"></ol>
+      <button type="button" class="cerrar" data-accion="cerrar-hoja" aria-label="Cerrar">×</button>
+    </div>
+    <div class="hoja-cuerpo">
+      <div data-panel="demos">
+        <button type="button" class="btn-cancelar" id="btn-cancelar" hidden>Cancelar DEMO en curso</button>
+        <ul class="lista" id="lista-demos"></ul>
       </div>
-      <ul class="lista-demos" id="lista-demos"><li class="vacio">Cargando…</li></ul>
-    </section>
-
-    <!-- Historial y eventos -->
-    <section class="panel bitacora" aria-label="Historial y eventos">
-      <div class="pestanas" role="tablist">
-        <button type="button" role="tab" class="pestana" aria-selected="true" data-tab="historial">Historial</button>
-        <button type="button" role="tab" class="pestana" aria-selected="false" data-tab="eventos">Eventos en vivo</button>
-      </div>
-      <ol class="registros" id="tab-historial"></ol>
-      <ol class="registros eventos" id="tab-eventos" hidden></ol>
-    </section>
-  </main>
+      <ol class="lista registros" data-panel="historial" id="lista-historial" hidden></ol>
+      <ol class="lista registros" data-panel="eventos" id="lista-eventos" hidden></ol>
+      <button type="button" class="btn-texto salir-hoja" data-accion="salir">Cerrar sesión</button>
+    </div>
+  </aside>
 
   <div class="aviso" id="aviso" role="status" aria-live="polite"></div>
-
-  <dialog class="ajustes" id="ajustes">
-    <form method="dialog" id="form-ajustes">
-      <h2>Acceso de control</h2>
-      <p>Las órdenes de movimiento necesitan la clave de la API (variable <code>API_KEY</code> del archivo <code>.env</code>). Se guarda solo en este navegador.</p>
-      <label for="api-key">Clave X-API-Key</label>
-      <input id="api-key" type="password" autocomplete="off" placeholder="clave-local-2-5" required>
-      <label for="origen">Origen que se registra en el historial</label>
-      <input id="origen" type="text" maxlength="30" value="WEB-CONTROL">
-      <div class="ajustes-acciones">
-        <button type="submit" class="btn-primario">Guardar</button>
-      </div>
-    </form>
-  </dialog>
-
-  <script src="/control/app.js"></script>
+  <script src="/control/app.js?v=3"></script>
 </body>
 </html>

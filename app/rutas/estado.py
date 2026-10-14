@@ -32,10 +32,32 @@ async def ejecutar_movimiento(datos: e.MovimientoIndividual, id_vehiculo: int = 
     r = await asyncio.to_thread(app_ctx.movimientos.ejecutar, id_vehiculo, datos.id_comando, datos.origen)
     c = r["comando"]
     notificados = await app_ctx.ws.publicar(id_vehiculo, app_ctx.ws.evento(
-        "movimiento", id_vehiculo, id_comando=c["id_comando"], comando=c["nombre"], codigo=c["codigo"], origen=datos.origen))
+        "movimiento", id_vehiculo, id_comando=c["id_comando"], comando=c["nombre"], codigo=c["codigo"],
+        origen=datos.origen, modo=datos.modo))
     return {"mensaje": "Movimiento registrado", "id_vehiculo": id_vehiculo, "id_comando": c["id_comando"],
             "comando": c["nombre"], "codigo": c["codigo"], "origen": datos.origen,
             "estado": r["estado"], "clientes_notificados": notificados}
+
+
+@estado.post("/mantener", response_model=e.Mensaje, responses={**AUT},
+             dependencies=[Depends(requiere_api_key)],
+             summary="Aviso: el botón sigue presionado",
+             description=("Para el modo **mantener**: el control lo envía cada ~0.4 s mientras el botón está presionado. "
+                          "Solo se transmite por WebSocket (evento `mantener`); **no** toca la base de datos ni el historial. "
+                          "Si el vehículo deja de recibirlo, se detiene solo."))
+async def mantener(id_vehiculo: int = IdV):
+    await app_ctx.ws.publicar(id_vehiculo, app_ctx.ws.evento("mantener", id_vehiculo))
+    return {"mensaje": "ok"}
+
+
+@estado.post("/soltar", response_model=e.Mensaje, responses={**AUT},
+             dependencies=[Depends(requiere_api_key)],
+             summary="Aviso: se soltó el botón",
+             description=("Detiene de inmediato el movimiento en curso (evento WebSocket `soltar`) sin registrar nada en el "
+                          "historial. También sirve para comprobar que la X-API-Key es válida."))
+async def soltar(id_vehiculo: int = IdV):
+    await app_ctx.ws.publicar(id_vehiculo, app_ctx.ws.evento("soltar", id_vehiculo))
+    return {"mensaje": "ok"}
 
 
 @historial.get("/historial", response_model=e.Historial, responses=ERR,

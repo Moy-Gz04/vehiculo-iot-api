@@ -1,6 +1,6 @@
 """Modelos JSON de entrada y salida (validación con Pydantic)."""
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -30,6 +30,9 @@ class ComandoActualizar(ComandoEntrada):
 class MovimientoIndividual(BaseModel):
     id_comando: int = Field(gt=0, description="Comando del catálogo de ESTE vehículo", examples=[1])
     origen: str = Field("API", min_length=1, max_length=30, examples=["THUNDER-CLIENT"])
+    modo: Literal["toque", "continuo", "mantener"] = Field(
+        "toque", description="toque = pulso corto · continuo = sigue hasta la siguiente orden · "
+                             "mantener = solo mientras lleguen avisos /mantener (se detiene con /soltar)")
 
 
 class DemoEntrada(BaseModel):
