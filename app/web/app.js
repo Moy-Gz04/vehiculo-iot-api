@@ -134,6 +134,12 @@
     enviar(nombre, 'continuo');
   }
 
+  // Aviso rápido por el WebSocket abierto (si no está abierto, por HTTP)
+  function avisoRapido(accion) {
+    if (st.ws && st.ws.readyState === 1) { st.ws.send(JSON.stringify({ accion, clave: clave() })); return; }
+    post(`/vehiculos/${st.idV}/${accion}`).catch(() => {});
+  }
+
   // Gamepad: mantener
   function presionarPad(boton) {
     const nombre = boton.dataset.cmd;
@@ -143,13 +149,14 @@
     B.classList.add('moviendo');
     const s = { nombre, boton, timer: null };
     st.sostenido = s;
-    enviar(nombre, 'mantener');
-    s.timer = setInterval(() => { if (st.sostenido === s) post(`/vehiculos/${st.idV}/mantener`).catch(() => {}); }, 400);
+    s.orden = enviar(nombre, 'mantener');      // promesa: el "soltar" se manda después de esta orden
+    s.timer = setInterval(() => { if (st.sostenido === s) avisoRapido('mantener'); }, 250);
   }
   function soltarSostenido() {
     const s = st.sostenido; if (!s) return;
     clearInterval(s.timer); s.boton.classList.remove('presionada'); st.sostenido = null; B.classList.remove('moviendo');
-    post(`/vehiculos/${st.idV}/soltar`).catch(() => {});
+    avisoRapido('soltar');                        // inmediato (por si la orden ya llegó)
+    Promise.resolve(s.orden).then(() => { if (!st.sostenido) avisoRapido('soltar'); });   // y otra vez tras la orden (si no hay otro botón presionado)
   }
 
   // Eventos de botones (puntero: mouse, touch y pluma)

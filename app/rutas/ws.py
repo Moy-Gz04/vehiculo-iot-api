@@ -1,8 +1,10 @@
 """WebSocket de monitoreo por vehículo: ws://localhost:8000/ws/vehiculos/{id_vehiculo}"""
 import asyncio
+import json
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
+from app.config import configuracion
 from app.dependencias import app_ctx
 from app.errores import ErrorNegocio
 
@@ -28,11 +30,19 @@ async def monitorear(ws: WebSocket, id_vehiculo: int):
             codigo=est and est["codigo"], conectado=bool(est and est["conectado"]),
             fecha_actualizacion=est and est["fecha_actualizacion"].isoformat(),
             demo_en_curso=app_ctx.ejecutor.en_curso(id_vehiculo), clientes=gestor.clientes(id_vehiculo)))
-        # Mantiene la conexión; responde "ping" para comprobar que sigue viva
+        # Mantiene la conexión; responde "ping" y reenvía los avisos rápidos del control
+        # {"accion": "mantener" | "soltar", "clave": "<X-API-Key>"}  (no tocan la base de datos)
         while True:
             texto = await ws.receive_text()
             if texto.strip().lower() == "ping":
                 await ws.send_json(gestor.evento("pong", id_vehiculo))
+                continue
+            try:
+                msg = json.loads(texto)
+            except ValueError:
+                continue
+            if isinstance(msg, dict) and msg.get("accion") in ("mantener", "soltar") and msg.get("clave") == configuracion.api_key:
+                await gestor.publicar(id_vehiculo, gestor.evento(msg["accion"], id_vehiculo))
     except WebSocketDisconnect:
         pass
     except Exception:
