@@ -120,3 +120,16 @@ Ejemplo:
 ```
 
 Un mensaje enviado no significa que el vehículo físico lo ejecutó: la confirmación del ESP8266/ESP32 se agregará después.
+
+## Despliegue en EC2 (práctica 2.6)
+
+1. En el servidor (Windows Server) copia o clona el proyecto, por ejemplo en `C:\vehiculo_iot_api`.
+2. PowerShell **como administrador** en esa carpeta:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File deploy\instalar-servidor.ps1   # venv, dependencias, .env y firewall 8000
+   powershell -ExecutionPolicy Bypass -File deploy\iniciar-servidor.ps1    # uvicorn --host 0.0.0.0 --port 8000
+   ```
+3. En AWS:
+   - Security Group del EC2: regla de entrada **TCP 8000** (origen 0.0.0.0/0 o tu IP).
+   - Security Group de RDS: regla **MySQL 3306** con origen el Security Group (o la IP privada) del EC2.
+4. Prueba desde fuera: `http://<IP-pública>:8000/docs`, `http://<IP-pública>:8000/control/` y `ws://<IP-pública>:8000/ws/vehiculos/1`.

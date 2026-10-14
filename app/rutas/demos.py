@@ -1,5 +1,5 @@
 """Endpoints de DEMO, sus movimientos y su ejecución."""
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends, Path, Request
 
 from app.dependencias import app_ctx, requiere_api_key
 from app.modelos import esquemas as e
@@ -75,16 +75,16 @@ def eliminar_movimiento(id_vehiculo: int = IdV, id_demo: int = IdD, id_mov: int 
 @demos.post("/{id_demo}/iniciar", status_code=202, response_model=e.DemoIniciada, responses={**ERR, **AUT},
             dependencies=CON_CLAVE, tags=["Ejecución DEMO"],
             summary="Iniciar una DEMO (se transmite por WebSocket)",
-            description=("Responde 202 de inmediato y transmite por `ws://localhost:8000/ws/vehiculos/{id}` los eventos "
+            description=("Responde 202 de inmediato y transmite por `ws://<servidor>:8000/ws/vehiculos/{id}` los eventos "
                          "`demo_inicio`, un `demo_movimiento` por cada uno de los N movimientos (respetando `duracion_ms` y "
                          "`pausa_ms`) y `demo_fin`. Actualiza el estado con `sp_actualizar_estado` pero **NO** llama a "
                          "`sp_registrar_historial`. 409 si el vehículo ya ejecuta otra DEMO.\n\n"
                          "**SP:** `sp_obtener_vehiculo`, `sp_obtener_demos`, `sp_obtener_movimientos_demo`, "
                          "`sp_obtener_estado`, `sp_actualizar_estado`"))
-async def iniciar_demo(id_vehiculo: int = IdV, id_demo: int = IdD):
+async def iniciar_demo(request: Request, id_vehiculo: int = IdV, id_demo: int = IdD):
     r = await app_ctx.ejecutor.iniciar(id_vehiculo, id_demo)
     return {"mensaje": "DEMO iniciada", "id_vehiculo": id_vehiculo, "id_demo": id_demo,
-            "movimientos": r["movimientos"], "websocket": f"ws://localhost:8000/ws/vehiculos/{id_vehiculo}"}
+            "movimientos": r["movimientos"], "websocket": str(request.base_url).replace("http", "ws", 1) + f"ws/vehiculos/{id_vehiculo}"}
 
 
 @demos.post("/cancelar", response_model=e.Mensaje, responses={**ERR, **AUT}, dependencies=CON_CLAVE,

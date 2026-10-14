@@ -6,7 +6,7 @@ DESCRIPCION = """
 API que funciona como **cerebro del vehículo IoT**: recibe órdenes, valida que sean correctas, las guarda en la base
 de datos `vehiculo_iot` (21 Stored Procedures) y las avisa en tiempo real por **WebSocket** al vehículo y a quien lo esté monitoreando.
 
-> Entorno Dev: la API corre solo en `http://localhost:8000`. Control remoto web: [`/control/`](/control/).
+> Control remoto web: [`/control/`](/control/) · En local la API corre en `http://localhost:8000`; en el servidor EC2, en `http://<IP-pública>:8000`.
 
 ---
 
@@ -28,7 +28,7 @@ de datos `vehiculo_iot` (21 Stored Procedures) y las avisa en tiempo real por **
 
 ### WebSocket (monitoreo en tiempo real)
 
-`ws://localhost:8000/ws/vehiculos/{id_vehiculo}` — Swagger no puede probar WebSocket; usa Postman o la página `/control/`.
+`ws://<servidor>:8000/ws/vehiculos/{id_vehiculo}` (en local `<servidor>` = `localhost`) — Swagger no puede probar WebSocket; usa Postman o la página `/control/`.
 Cada mensaje es JSON con `evento`, `id_vehiculo` y `timestamp`:
 
 | evento | Cuándo llega |
