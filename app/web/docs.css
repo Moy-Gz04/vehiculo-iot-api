@@ -1,0 +1,147 @@
+/* Tema de Swagger UI para la API Vehículo IoT: lectura clara, más aire, acentos del control (grafito + amarillo) */
+:root {
+  --d-fondo: #F6F5F1;
+  --d-panel: #FFFFFF;
+  --d-linea: #E3E0D8;
+  --d-texto: #1E2125;
+  --d-tenue: #5D646C;
+  --d-grafito: #1F2226;
+  --d-amarillo: #F2B705;
+  --d-get: #2C7BB6;
+  --d-post: #2E8B57;
+  --d-display: 'Chakra Petch', 'Segoe UI', system-ui, sans-serif;
+  --d-cuerpo: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+  --d-mono: 'IBM Plex Mono', Consolas, monospace;
+}
+body { margin: 0; background: var(--d-fondo); color: var(--d-texto); }
+.swagger-ui, .swagger-ui .info, .swagger-ui .opblock-tag, .swagger-ui .opblock .opblock-summary-description,
+.swagger-ui table, .swagger-ui .parameter__name, .swagger-ui .response-col_status, .swagger-ui label, .swagger-ui p,
+.swagger-ui li, .swagger-ui .tab li, .swagger-ui .btn, .swagger-ui select, .swagger-ui input {
+  font-family: var(--d-cuerpo);
+}
+.swagger-ui code, .swagger-ui .opblock-summary-path, .swagger-ui .microlight, .swagger-ui .parameter__type,
+.swagger-ui .model, .swagger-ui textarea { font-family: var(--d-mono) !important; }
+.swagger-ui .wrapper { max-width: 1120px; padding: 0 20px; }
+
+/* ---------- Encabezado y guía ---------- */
+.swagger-ui .information-container { margin: 0; padding: 0; background: none; }
+.swagger-ui .information-container.wrapper, .swagger-ui .information-container .wrapper { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+.swagger-ui .info {
+  margin: 24px 0 14px; padding: 30px 34px; background: var(--d-panel); border: 1px solid var(--d-linea); border-radius: 16px;
+  border-top: 6px solid var(--d-amarillo);
+}
+.swagger-ui .info hgroup.main { margin: 0; }
+.swagger-ui .info .title { font: 700 34px/1.1 var(--d-display); color: var(--d-texto); display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.swagger-ui .info .title small { top: 0; background: #5D646C !important; }
+.swagger-ui .info .title small.version-stamp { background: var(--d-amarillo) !important; }
+.swagger-ui .info .title small pre { color: #fff; font-family: var(--d-mono); }
+.swagger-ui .info .title small.version-stamp pre { color: var(--d-grafito); }
+.swagger-ui .info a { color: #8A6500; font-weight: 600; text-decoration: none; border-bottom: 1px solid #E8C55A; }
+.swagger-ui .info .description { margin: 14px 0 0; }
+.swagger-ui .info .description * { color: var(--d-texto); }
+.swagger-ui .info .description p, .swagger-ui .info .description li { font-size: 15px; line-height: 1.65; max-width: 80ch; margin: 0 0 10px; }
+.swagger-ui .info .description li { margin: 4px 0; }
+.swagger-ui .info .description ol { padding-left: 22px; margin: 0 0 6px; }
+.swagger-ui .info .description h3 {
+  margin: 30px 0 12px; padding-top: 22px; border-top: 1px solid var(--d-linea);
+  font: 700 13px var(--d-display) !important; letter-spacing: .16em; text-transform: uppercase; color: #8A6500 !important;
+}
+.swagger-ui .info .description hr { display: none; }
+.swagger-ui .info .description code {
+  background: #FFF6D6; color: #6B4E00 !important; padding: 1px 6px; border-radius: 5px; font-size: 13px; white-space: nowrap;
+}
+.swagger-ui .info .description blockquote {
+  margin: 14px 0 0; padding: 10px 16px; border-left: 4px solid var(--d-amarillo); background: #FBF8EE; border-radius: 0 10px 10px 0;
+}
+.swagger-ui .info .description blockquote p { margin: 0; }
+.swagger-ui .info .description table {
+  width: 100%; border-collapse: separate; border-spacing: 0; margin: 4px 0 8px; font-size: 14px;
+  border: 1px solid var(--d-linea); border-radius: 12px; overflow: hidden;
+}
+.swagger-ui .info .description th {
+  text-align: left; padding: 10px 14px; background: var(--d-grafito); color: #fff !important;
+  font: 600 11.5px var(--d-mono) !important; letter-spacing: .1em; text-transform: uppercase; border: 0;
+}
+.swagger-ui .info .description td { padding: 10px 14px; border-top: 1px solid var(--d-linea); vertical-align: top; line-height: 1.55; font-size: 14px; }
+.swagger-ui .info .description tr:nth-child(even) td { background: #FAF9F6; }
+.swagger-ui .info .description td:first-child { width: 34%; }
+.swagger-ui .info .description td:first-child code { white-space: normal; }
+
+/* ---------- Barra de autorización y buscador ---------- */
+.swagger-ui .scheme-container { background: none; box-shadow: none; padding: 0 0 6px; margin: 0; }
+.swagger-ui .btn.authorize {
+  border-color: var(--d-grafito); color: var(--d-grafito); border-radius: 10px; padding: 8px 18px; font-weight: 600;
+}
+.swagger-ui .btn.authorize svg { fill: var(--d-grafito); }
+.swagger-ui .filter-container { margin: 6px 0 0; }
+.swagger-ui .filter .operation-filter-input {
+  border: 1px solid var(--d-linea); border-radius: 10px; padding: 10px 14px; font-size: 14px; background: var(--d-panel);
+}
+.swagger-ui .filter .operation-filter-input:focus { outline: 2px solid var(--d-amarillo); border-color: transparent; }
+
+/* ---------- Grupos ---------- */
+.swagger-ui .opblock-tag-section { margin-bottom: 12px; background: var(--d-panel); border: 1px solid var(--d-linea); border-radius: 14px; padding: 0 16px; }
+.swagger-ui .opblock-tag {
+  border-bottom: 0; padding: 16px 4px; margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px;
+}
+.swagger-ui .opblock-tag:hover { background: none; }
+.swagger-ui .opblock-tag a.nostyle span, .swagger-ui .opblock-tag > a span {
+  font: 700 21px var(--d-display); color: var(--d-texto); letter-spacing: .01em;
+}
+.swagger-ui .opblock-tag small {
+  flex: 1 1 100%; order: 3; padding: 0; font-size: 13.5px; line-height: 1.5; color: var(--d-tenue); max-width: 92ch;
+}
+.swagger-ui .opblock-tag small .markdown p { margin: 0; }
+.swagger-ui .opblock-tag small strong { color: var(--d-texto); }
+.swagger-ui .opblock-tag > button, .swagger-ui .opblock-tag .expand-operation { position: absolute; right: 16px; }
+.swagger-ui .opblock-tag { position: relative; padding-right: 50px; }
+.swagger-ui .opblock-tag-section.is-open .opblock-tag { border-bottom: 1px solid var(--d-linea); margin-bottom: 12px; }
+.swagger-ui .opblock-tag-section > div:last-child { padding-bottom: 6px; }
+
+/* ---------- Operaciones ---------- */
+.swagger-ui .opblock { border-radius: 10px; box-shadow: none; margin: 0 0 10px; border-width: 1px; }
+.swagger-ui .opblock .opblock-summary { padding: 8px 10px; gap: 10px; }
+.swagger-ui .opblock .opblock-summary-method {
+  min-width: 70px; border-radius: 7px; padding: 7px 0; font: 700 12.5px var(--d-mono); letter-spacing: .06em;
+}
+.swagger-ui .opblock .opblock-summary-path { font-size: 14.5px !important; font-weight: 600; color: var(--d-texto); word-break: break-all; }
+.swagger-ui .opblock .opblock-summary-path__deprecated { font-size: 14px; }
+.swagger-ui .opblock .opblock-summary-description { font-size: 14px; color: var(--d-tenue); flex: 1 1 220px; }
+.swagger-ui .opblock.opblock-get { background: #F2F7FB; border-color: #CFE0EE; }
+.swagger-ui .opblock.opblock-get .opblock-summary-method { background: var(--d-get); }
+.swagger-ui .opblock.opblock-post { background: #F1F8F4; border-color: #CDE6D7; }
+.swagger-ui .opblock.opblock-post .opblock-summary-method { background: var(--d-post); }
+.swagger-ui .opblock .opblock-section-header { background: rgba(255,255,255,.75); box-shadow: none; border-top: 1px solid var(--d-linea); }
+.swagger-ui .opblock-description-wrapper p, .swagger-ui .opblock-description-wrapper li {
+  font-size: 14.5px; line-height: 1.6; color: var(--d-texto); max-width: 90ch;
+}
+.swagger-ui .opblock-description-wrapper code, .swagger-ui .renderedMarkdown code {
+  background: #FFF6D6; color: #6B4E00; padding: 1px 5px; border-radius: 4px; font-size: 13px;
+}
+.swagger-ui .authorization__btn svg { fill: #8A9098; }
+.swagger-ui .authorization__btn.locked svg { fill: var(--d-post); }
+
+/* Tablas de parámetros y respuestas */
+.swagger-ui table thead tr th, .swagger-ui table thead tr td {
+  font: 600 11px var(--d-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--d-tenue); border-bottom: 1px solid var(--d-linea);
+}
+.swagger-ui .parameter__name { font-size: 14px; font-weight: 600; }
+.swagger-ui .parameters-col_description input, .swagger-ui .parameters-col_description select,
+.swagger-ui textarea.body-param__text { border: 1px solid var(--d-linea); border-radius: 8px; }
+.swagger-ui .response-col_status { font: 600 14px var(--d-mono); }
+.swagger-ui .responses-inner h4, .swagger-ui .responses-inner h5 { font-size: 13px; }
+.swagger-ui .highlight-code, .swagger-ui .microlight { border-radius: 8px; font-size: 12.5px !important; }
+
+/* Botones */
+.swagger-ui .btn { border-radius: 8px; }
+.swagger-ui .btn.execute { background: var(--d-grafito); border-color: var(--d-grafito); }
+.swagger-ui .btn.try-out__btn { border-color: var(--d-grafito); }
+
+/* Ventana de Authorize */
+.swagger-ui .dialog-ux .modal-ux { border-radius: 14px; border: 1px solid var(--d-linea); }
+.swagger-ui .dialog-ux .modal-ux-header h3 { font: 700 18px var(--d-display); }
+
+@media (max-width: 640px) {
+  .swagger-ui .info .title { font-size: 26px; }
+  .swagger-ui .opblock .opblock-summary { flex-wrap: wrap; }
+}

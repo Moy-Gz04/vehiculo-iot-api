@@ -1,7 +1,8 @@
 """Construye una sola vez los objetos de la API y la autenticación por API key."""
 from typing import Optional
 
-from fastapi import Header
+from fastapi import Security
+from fastapi.security import APIKeyHeader
 
 from app.config import configuracion
 from app.db.conexion import BaseDatos
@@ -33,7 +34,11 @@ class NoAutenticado(ErrorNegocio):
     codigo_http = 401
 
 
-def requiere_api_key(x_api_key: Optional[str] = Header(None, description="Clave de la API (variable API_KEY del .env)")) -> None:
+esquema_clave = APIKeyHeader(name="X-API-Key", auto_error=False,
+                             description="Clave de la API (variable API_KEY del archivo .env)")
+
+
+def requiere_api_key(x_api_key: Optional[str] = Security(esquema_clave)) -> None:
     """Protege las operaciones de control, modificación y eliminación."""
     if not x_api_key:
         raise NoAutenticado("Falta el encabezado X-API-Key")

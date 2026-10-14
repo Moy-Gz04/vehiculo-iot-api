@@ -12,6 +12,7 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.db.conexion import ErrorBaseDatos
+from app.documentacion import DESCRIPCION, TAGS, pagina_docs
 from app.errores import ErrorNegocio
 from app.rutas.demos import demos
 from app.rutas.estado import estado, historial
@@ -24,20 +25,15 @@ log = logging.getLogger("api")
 app = FastAPI(
     title="API Vehículo IoT",
     version="1.0.0",
-    description=("API local (entorno Dev) para el vehículo IoT del esquema **vehiculo_iot** en Amazon RDS. "
-                 "Integra los 21 Stored Procedures. Las operaciones de control, modificación y eliminación "
-                 "requieren el encabezado `X-API-Key`.\n\n"
-                 "**WebSocket** (no se muestra en Swagger, ver README): `ws://localhost:8000/ws/vehiculos/{id_vehiculo}`"),
-    openapi_tags=[
-        {"name": "Vehículos", "description": "sp_crear_vehiculo · sp_obtener_vehiculos · sp_obtener_vehiculo · sp_actualizar_vehiculo · sp_eliminar_vehiculo"},
-        {"name": "Comandos", "description": "sp_crear_comando · sp_obtener_comandos_vehiculo · sp_actualizar_comando · sp_eliminar_comando"},
-        {"name": "Estado", "description": "sp_actualizar_estado · sp_obtener_estado (movimiento individual)"},
-        {"name": "Historial", "description": "sp_registrar_historial · sp_obtener_historial"},
-        {"name": "DEMO", "description": "sp_crear_demo · sp_obtener_demos · sp_actualizar_demo · sp_eliminar_demo"},
-        {"name": "Movimientos DEMO", "description": "sp_agregar_movimiento_demo · sp_obtener_movimientos_demo · sp_actualizar_movimiento_demo · sp_eliminar_movimiento_demo"},
-        {"name": "Ejecución DEMO", "description": "Inicio y cancelación de DEMO transmitidas por WebSocket"},
-    ],
+    description=DESCRIPCION,
+    openapi_tags=TAGS,
+    docs_url=None,
 )
+
+
+@app.get("/docs", include_in_schema=False)
+def documentacion():
+    return pagina_docs(app.openapi_url, app.title)
 
 for r in (vehiculos, comandos, estado, historial, demos, ws_router):
     app.include_router(r)
@@ -51,7 +47,7 @@ def control():
     return RedirectResponse("/control/")
 
 
-@app.get("/", tags=["Vehículos"], summary="Comprobar que la API responde")
+@app.get("/", tags=["Sistema"], summary="Comprobar que la API responde")
 def raiz():
     return {"api": "Vehículo IoT", "estado": "en línea", "docs": "http://localhost:8000/docs", "control": "http://localhost:8000/control/"}
 
