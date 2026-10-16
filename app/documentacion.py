@@ -6,7 +6,7 @@ DESCRIPCION = """
 API que funciona como **cerebro del vehículo IoT**: recibe órdenes, valida que sean correctas, las guarda en la base
 de datos `vehiculo_iot` (21 Stored Procedures) y las avisa en tiempo real por **WebSocket** al vehículo y a quien lo esté monitoreando.
 
-> Control remoto web: [`/control/`](/control/) · En local la API corre en `http://localhost:8000`; en el servidor EC2, en `http://<IP-pública>:8000`.
+> Portal del proyecto: [`/portal/`](/portal/) · Control remoto: [`/control/`](/control/) · Pública en EC2: `https://13-218-5-111.sslip.io` (WSS: `wss://13-218-5-111.sslip.io/ws/vehiculos/{id}`) · En local: `http://localhost:8000`.
 
 ---
 

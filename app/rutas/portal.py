@@ -101,16 +101,27 @@ def poo():
     for p in sorted((RAIZ / "app").rglob("*.py")):
         if "__pycache__" in p.parts or p.name == "__init__.py":
             continue
-        arbol = ast.parse(p.read_text(encoding="utf-8"))
+        fuente = p.read_text(encoding="utf-8")
+        arbol = ast.parse(fuente)
+
+        def detalle(f):
+            """Nombre, línea y código fuente exacto de una función o método."""
+            dec = f.decorator_list[0].lineno if f.decorator_list else f.lineno
+            lineas = fuente.splitlines()[dec - 1:f.end_lineno]
+            return {"nombre": f.name, "linea": dec, "codigo": "\n".join(lineas),
+                    "doc": (ast.get_docstring(f) or "").split("\n")[0]}
+
         clases = []
         for n in arbol.body:
             if isinstance(n, ast.ClassDef):
-                metodos = [m.name for m in n.body if isinstance(m, (ast.FunctionDef, ast.AsyncFunctionDef))]
+                funcs = [m for m in n.body if isinstance(m, (ast.FunctionDef, ast.AsyncFunctionDef))]
                 clases.append({
                     "nombre": n.name,
                     "bases": [ast.unparse(b) for b in n.bases],
                     "doc": (ast.get_docstring(n) or "").split("\n")[0],
-                    "metodos": metodos,
+                    "linea": n.lineno,
+                    "metodos": [m.name for m in funcs],
+                    "detalle": [detalle(m) for m in funcs],
                 })
         importa = sorted({(n.module or "").split(".")[1] for n in ast.walk(arbol)
                           if isinstance(n, ast.ImportFrom) and (n.module or "").startswith("app.") and len((n.module or "").split(".")) > 1})
@@ -119,6 +130,7 @@ def poo():
             "doc": (ast.get_docstring(arbol) or "").split("\n")[0],
             "clases": clases,
             "funciones": [n.name for n in arbol.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))],
+            "funciones_detalle": [detalle(n) for n in arbol.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))],
             "importa": importa,
         })
     return modulos

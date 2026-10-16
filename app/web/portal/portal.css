@@ -251,6 +251,66 @@ table.t .mono{font-size:12px}
 .toast{position:fixed;right:20px;bottom:20px;z-index:70;padding:11px 16px;border-radius:12px;background:var(--txt);color:var(--bg);font-weight:600;font-size:13px;box-shadow:var(--sombra);opacity:0;transform:translateY(10px);pointer-events:none;transition:opacity .25s,transform .25s}
 .toast.ver{opacity:1;transform:none}
 
+/* ---------------- Evidencia desplegable ---------------- */
+details.check{display:block;padding:0}
+details.check>summary{display:grid;grid-template-columns:22px 1fr auto 16px;gap:12px;align-items:start;padding:12px 14px;cursor:pointer;list-style:none}
+details.check>summary::-webkit-details-marker{display:none}
+details.check>summary .flecha{color:var(--tenue);transition:transform .2s;margin-top:3px}
+details.check[open]>summary .flecha{transform:rotate(90deg)}
+details.check[open]{border-color:var(--linea2)}
+.evidencia{padding:0 14px 14px 48px;display:grid;gap:10px}
+.porque{font-size:13.5px;color:var(--txt2);background:var(--sup2);border:1px solid var(--linea);border-radius:11px;padding:10px 12px}
+.porque b{color:var(--txt)}
+.ev-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:start}
+.ev-caja{border-radius:12px;overflow:hidden;border:1px solid var(--linea);background:var(--codigo);min-width:0}
+.ev-caja .cab{display:flex;align-items:center;gap:8px;padding:7px 12px;font:600 10.5px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:#8A96B2;border-bottom:1px solid rgba(255,255,255,.06)}
+.ev-caja .cab .chip{height:20px;font-size:10.5px;letter-spacing:0}
+.ev-caja pre{margin:0;padding:10px 12px;font:400 12px/1.6 var(--f-mono);color:#D7DEEC;overflow:auto;max-height:280px;white-space:pre-wrap;word-break:break-word}
+
+/* ---------------- Bloques de código copiables ---------------- */
+.bloque{border-radius:12px;overflow:hidden;border:1px solid var(--linea);background:var(--codigo);margin-top:8px}
+.bloque .cab{display:flex;align-items:center;gap:8px;padding:6px 8px 6px 12px;font:600 11px var(--f-mono);color:#8A96B2;border-bottom:1px solid rgba(255,255,255,.06)}
+.bloque .cab span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bloque .cab button{border:0;background:rgba(255,255,255,.07);color:#D7DEEC;border-radius:7px;height:24px;padding:0 9px;font:600 11px var(--f-txt);cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.bloque .cab button:hover{background:rgba(255,255,255,.13)}
+.bloque pre{margin:0;padding:10px 12px;font:400 12.5px/1.6 var(--f-mono);color:#D7DEEC;overflow:auto;white-space:pre-wrap;word-break:break-word}
+.donde{display:inline-flex;align-items:center;gap:6px;font:600 11px var(--f-mono);color:var(--acento);background:var(--acentoSuave);border-radius:7px;padding:2px 8px;margin-bottom:6px}
+.espera{margin-top:8px;font-size:13px;color:var(--ok);display:flex;gap:8px;align-items:flex-start}
+.espera .i{margin-top:3px}
+
+/* ---------------- Modo ampliado ---------------- */
+.enfoque{position:fixed!important;inset:0;z-index:80;border-radius:0!important;margin:0!important;display:flex;flex-direction:column;background:var(--sup);max-width:none!important;width:auto!important}
+.enfoque iframe{flex:1;height:auto!important;border-radius:0!important}
+.enfoque .codigo-lay{flex:1;border-radius:0}
+body.con-enfoque{overflow:hidden}
+.cta-movil{display:none}
+
+/* ---------------- Guía de entrada ---------------- */
+.intro{border:1px solid var(--linea);border-radius:18px;background:linear-gradient(180deg,var(--acentoSuave),transparent 140%),var(--sup);padding:16px 18px;margin-bottom:14px}
+.intro-cab{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.intro-cab b{font:700 15px var(--f-tit)}
+.intro ol{list-style:none;margin:12px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px}
+.intro li{display:grid;grid-template-columns:26px 1fr;gap:10px;padding:10px 12px;border-radius:12px;background:var(--sup);border:1px solid var(--linea);font-size:13px;color:var(--suave);transition:border-color .25s,background .25s}
+.intro li b{display:block;color:var(--txt);font-size:13px;font-weight:600}
+.intro li .n{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font:700 11.5px var(--f-mono);background:var(--sup2);color:var(--tenue)}
+.intro li.activo{border-color:var(--acento);background:var(--acentoSuave)} .intro li.activo .n{background:var(--acento);color:#fff}
+.intro li.listo .n{background:var(--okS);color:var(--ok)}
+.btn.pulso{animation:pulso 1.6s ease-in-out infinite}
+@keyframes pulso{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--acento) 45%,transparent)}50%{box-shadow:0 0 0 6px transparent}}
+
+/* ---------------- Funciones (POO) ---------------- */
+.clase .met button{font:500 10.5px var(--f-mono);padding:2px 7px;border-radius:6px;background:var(--sup);border:1px solid var(--linea);color:var(--txt2);cursor:pointer}
+.clase .met button:hover{border-color:var(--acento);color:var(--acento)}
+.clase summary{cursor:pointer;list-style:none;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.clase summary::-webkit-details-marker{display:none}
+.modal .caja.grande{width:min(980px,100%);padding:0;overflow:hidden;display:flex;flex-direction:column;max-height:88vh}
+.modal .caja.grande .visor-cab{padding:12px 16px}
+.modal .caja.grande pre{margin:0;overflow:auto;background:var(--codigo);font:400 12.5px/1.65 var(--f-mono);padding:14px 0;counter-reset:l}
+.modal .caja.grande code{display:block;color:#D7DEEC}
+.modal .caja.grande .ln{display:block;padding-right:18px}
+.modal .caja.grande .ln::before{counter-increment:l;content:counter(l);display:inline-block;width:46px;margin-right:16px;text-align:right;color:#4A5570;user-select:none}
+.modal .caja.grande .explica{padding:12px 16px;border-top:1px solid var(--linea);font-size:13px;color:var(--suave)}
+
 /* ---------------- Responsive ---------------- */
 @media (max-width:1100px){
   .estado-vivo{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -272,6 +332,12 @@ table.t .mono{font-size:12px}
   .guia-cab{grid-template-columns:1fr}
   .hero{padding:24px 20px}
   .puntaje{flex-direction:column;align-items:stretch}
+  .ev-grid{grid-template-columns:1fr}
+  .evidencia{padding-left:14px}
+  details.check>summary{grid-template-columns:22px 1fr 16px}
+  details.check>summary .chip{display:none}
+  .telefono{display:none}
+  .cta-movil{display:flex}
   .anillo{margin:0 auto}
   .ocultar-movil{display:none}
   .ev{grid-template-columns:58px 1fr}
