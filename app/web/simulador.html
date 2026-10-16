@@ -3,297 +3,552 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Simulador DEMO · Vehículo IoT</title>
+<title>Simulador DEMO 3D · Excavadora IoT</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
-  :root{--fondo:#0B1020;--panel:#121A30;--panel2:#18223D;--linea:#26335A;--texto:#E6ECFF;--suave:#8D9AC4;
-        --azul:#3D7BFF;--verde:#2FD38A;--ambar:#FFB547;--rojo:#FF5D73;--morado:#A57BFF}
+  :root{--fondo:#0A0E18;--panel:#111827;--panel2:#172033;--linea:#243049;--texto:#E6ECFF;--suave:#8D9AC4;--tenue:#5E6A8C;
+        --azul:#3D7BFF;--verde:#2FD38A;--ambar:#FFB547;--rojo:#FF5D73;--morado:#A57BFF;--amarillo:#F2B33D}
   *{box-sizing:border-box}
-  body{margin:0;background:var(--fondo);color:var(--texto);font:400 14px/1.5 'IBM Plex Sans',system-ui,sans-serif;padding:20px 16px}
-  h1{font:700 26px 'Chakra Petch',sans-serif;margin:0;letter-spacing:.02em}
-  .sub{color:var(--suave);margin:4px 0 18px}
-  .grid{display:grid;grid-template-columns:340px 1fr;gap:16px;max-width:1280px;margin:0 auto}
-  @media (max-width:900px){.grid{grid-template-columns:1fr}}
-  .panel{background:var(--panel);border:1px solid var(--linea);border-radius:16px;padding:16px}
-  .panel h2{font:700 13px 'Chakra Petch';letter-spacing:.14em;text-transform:uppercase;color:var(--suave);margin:0 0 12px}
-  label{display:block;font:600 11px 'IBM Plex Mono';letter-spacing:.08em;text-transform:uppercase;color:var(--suave);margin:10px 0 4px}
-  input,select{width:100%;background:#0A1124;border:1px solid var(--linea);color:var(--texto);border-radius:10px;padding:9px 11px;font:500 14px 'IBM Plex Mono'}
-  input:focus,select:focus{outline:2px solid var(--azul);outline-offset:1px}
-  .fila{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  button{font:700 13px 'Chakra Petch';letter-spacing:.08em;border:0;border-radius:12px;padding:12px;cursor:pointer;width:100%;margin-top:14px;color:#fff;background:linear-gradient(90deg,var(--azul),var(--morado))}
-  button.sec{background:var(--panel2);border:1px solid var(--linea)}
-  button:disabled{opacity:.5;cursor:default}
-  button:focus-visible{outline:2px solid #fff;outline-offset:2px}
-  .pasos{list-style:none;padding:0;margin:0;display:grid;gap:6px}
-  .pasos li{display:flex;gap:10px;align-items:center;background:var(--panel2);border-radius:10px;padding:8px 10px;font-size:13px}
-  .pasos .ic{width:20px;height:20px;border-radius:50%;flex:none;display:grid;place-items:center;font:700 11px 'IBM Plex Mono';background:#0A1124;color:var(--suave)}
-  .pasos li.ok .ic{background:var(--verde);color:#062014}
-  .pasos li.run .ic{background:var(--ambar);color:#2A1A00}
-  .pasos li.err .ic{background:var(--rojo);color:#2A0008}
-  .pasos code{font:500 11.5px 'IBM Plex Mono';color:var(--suave);margin-left:auto}
-  .derecha{display:grid;gap:16px}
-  .escena{position:relative;height:300px;border-radius:12px;overflow:hidden;background:
-      linear-gradient(rgba(61,123,255,.08) 1px,transparent 1px) 0 0/30px 30px,
-      linear-gradient(90deg,rgba(61,123,255,.08) 1px,transparent 1px) 0 0/30px 30px,#0A1124}
-  #carro{position:absolute;left:50%;top:50%;width:64px;height:40px;margin:-20px 0 0 -32px;transition:transform .5s ease}
-  .hud{position:absolute;left:12px;top:12px;font:600 12px 'IBM Plex Mono';color:var(--suave)}
-  .hud b{color:var(--texto);font-size:18px;display:block;font-family:'Chakra Petch'}
-  .estado{position:absolute;right:12px;top:12px;font:600 11px 'IBM Plex Mono';padding:4px 10px;border-radius:99px;background:var(--panel2)}
-  .estado.on{color:var(--verde)}.estado.off{color:var(--rojo)}
+  body{margin:0;background:var(--fondo);color:var(--texto);font:400 14px/1.5 'IBM Plex Sans',system-ui,sans-serif;padding:18px 16px 40px}
+  h1{font:700 24px 'Chakra Petch',sans-serif;margin:0;letter-spacing:.02em}
+  .sub{color:var(--suave);margin:4px 0 16px;max-width:900px}
+  .grid{display:grid;grid-template-columns:440px minmax(0,1fr);gap:14px;max-width:1500px;margin:0 auto}
+  .cab{max-width:1500px;margin:0 auto}
+  @media (max-width:1000px){.grid{grid-template-columns:1fr}}
+  .panel{background:var(--panel);border:1px solid var(--linea);border-radius:16px;padding:14px}
+  .panel h2{font:700 12px 'Chakra Petch';letter-spacing:.14em;text-transform:uppercase;color:var(--suave);margin:0 0 10px;display:flex;align-items:center;gap:8px}
+  .panel h2 .der{margin-left:auto}
+  label.t{display:block;font:600 10.5px 'IBM Plex Mono';letter-spacing:.08em;text-transform:uppercase;color:var(--suave);margin:8px 0 4px}
+  input,select{width:100%;background:#0A1124;border:1px solid var(--linea);color:var(--texto);border-radius:9px;padding:8px 10px;font:500 13px 'IBM Plex Mono'}
+  input:focus,select:focus,button:focus-visible{outline:2px solid var(--azul);outline-offset:1px}
+  .fila2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  button{font:700 12.5px 'Chakra Petch';letter-spacing:.06em;border:0;border-radius:10px;padding:10px 12px;cursor:pointer;color:#fff;background:var(--panel2);border:1px solid var(--linea)}
+  button:hover{border-color:#36466a}
+  button.pri{background:linear-gradient(90deg,var(--azul),var(--morado));border:0;width:100%;padding:12px;margin-top:10px}
+  button.sec{width:100%;margin-top:8px}
+  button.chico{padding:5px 9px;font-size:11px;border-radius:8px}
+  button:disabled{opacity:.45;cursor:default}
+  .real{display:flex;gap:10px;align-items:flex-start;margin-top:10px;padding:10px 12px;border-radius:12px;background:#0A1124;border:1px solid var(--linea);cursor:pointer;font-size:12.5px;color:var(--suave)}
+  .real input{width:18px;height:18px;margin-top:2px;accent-color:var(--verde);flex:none}
+  .real b{display:block;color:var(--texto);font-size:13px}
+  .real:has(input:checked){border-color:var(--verde)}
+
+  /* Constructor de DEMO */
+  .plantillas{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+  .pasos-demo{display:grid;gap:6px;max-height:330px;overflow:auto;padding-right:2px}
+  .paso{display:grid;grid-template-columns:22px minmax(0,1fr) 64px 56px auto;gap:6px;align-items:center;background:var(--panel2);border:1px solid var(--linea);border-radius:10px;padding:6px}
+  .paso .n{font:700 11px 'IBM Plex Mono';color:var(--tenue);text-align:center}
+  .paso select,.paso input{padding:6px 7px;font-size:12px}
+  .paso .acc{display:flex;gap:3px}
+  .paso .acc button{padding:4px 6px;font-size:11px;border-radius:7px;line-height:1}
+  .paso.activo{border-color:var(--ambar);box-shadow:0 0 0 1px var(--ambar) inset}
+  .paso.hecho{opacity:.6}
+  .totales{display:flex;justify-content:space-between;font:500 11.5px 'IBM Plex Mono';color:var(--suave);margin-top:8px}
+  .lista-pasos{list-style:none;padding:0;margin:0;display:grid;gap:5px}
+  .lista-pasos li{display:flex;gap:8px;align-items:center;background:var(--panel2);border-radius:9px;padding:6px 9px;font-size:12.5px}
+  .lista-pasos .ic{width:18px;height:18px;border-radius:50%;flex:none;display:grid;place-items:center;font:700 10px 'IBM Plex Mono';background:#0A1124;color:var(--suave)}
+  .lista-pasos li.ok .ic{background:var(--verde);color:#062014}.lista-pasos li.run .ic{background:var(--ambar);color:#2A1A00}.lista-pasos li.err .ic{background:var(--rojo);color:#2A0008}
+  .lista-pasos code{font:500 11px 'IBM Plex Mono';color:var(--tenue);margin-left:auto;text-align:right}
+
+  /* Escena */
+  .escena{position:relative;height:min(62vh,600px);min-height:380px;border-radius:14px;overflow:hidden;background:#0B1020}
+  .escena canvas{display:block;width:100%;height:100%}
+  .hud{position:absolute;left:12px;top:10px;pointer-events:none;font:600 12px 'IBM Plex Mono';color:var(--suave)}
+  .hud b{display:block;color:var(--texto);font:700 20px 'Chakra Petch'}
+  .chipwrap{position:absolute;right:10px;top:10px;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+  .chip{font:600 11px 'IBM Plex Mono';padding:4px 10px;border-radius:99px;background:rgba(23,32,51,.85);color:var(--suave);border:1px solid var(--linea)}
+  .chip.on{color:var(--verde)}.chip.off{color:var(--rojo)}
+  .controles3d{position:absolute;left:10px;bottom:10px;display:flex;gap:6px}
   .barra{height:6px;background:var(--panel2);border-radius:99px;overflow:hidden;margin-top:10px}
   .barra i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--verde),var(--azul));transition:width .3s}
-  .log{height:300px;overflow:auto;font:500 12px/1.55 'IBM Plex Mono';background:#0A1124;border-radius:12px;padding:10px}
-  .log div{padding:3px 0;border-bottom:1px solid rgba(38,51,90,.5);white-space:pre-wrap;word-break:break-word}
-  .log .t{color:var(--suave)}.log .e{font-weight:600}
-  .log .e.estado_actual{color:var(--azul)}.log .e.demo_inicio,.log .e.demo_fin{color:var(--verde)}
-  .log .e.demo_movimiento{color:var(--ambar)}.log .e.demo_cancelada,.log .e.error,.log .e.demo_error{color:var(--rojo)}
-  .log .e.movimiento{color:var(--morado)}
+
+  /* Registros */
+  .registros{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+  @media (max-width:1200px){.registros{grid-template-columns:1fr}}
+  .log{height:300px;overflow:auto;font:500 12px/1.5 'IBM Plex Mono';background:#0A1124;border-radius:12px;padding:6px 10px}
+  .log .vacio{color:var(--tenue);padding:16px 4px;text-align:center}
+  .ev{padding:5px 0;border-bottom:1px solid rgba(36,48,73,.6);word-break:break-word}
+  .ev .t{color:var(--tenue)} .ev .e{font-weight:600}
+  .ev .e.estado_actual{color:var(--azul)} .ev .e.demo_inicio,.ev .e.demo_fin{color:var(--verde)}
+  .ev .e.demo_movimiento{color:var(--ambar)} .ev .e.demo_cancelada,.ev .e.error{color:var(--rojo)} .ev .e.movimiento{color:var(--morado)}
+  details.q{border-bottom:1px solid rgba(36,48,73,.6);padding:5px 0}
+  details.q summary{cursor:pointer;list-style:none;display:grid;grid-template-columns:58px 46px minmax(0,1fr) 54px;gap:8px;align-items:center}
+  details.q summary::-webkit-details-marker{display:none}
+  .met{font-weight:700;font-size:11px;border-radius:5px;padding:1px 6px;text-align:center}
+  .met.GET{background:rgba(61,123,255,.16);color:#7EA5FF}.met.POST{background:rgba(47,211,138,.16);color:var(--verde)}.met.WS{background:rgba(165,123,255,.18);color:var(--morado)}
+  .st{font-weight:700}.st.ok{color:var(--verde)}.st.mal{color:var(--rojo)}
+  .ruta{color:var(--texto);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ms{color:var(--tenue);text-align:right}
+  details.q pre{margin:6px 0 2px;padding:8px;background:#060B18;border-radius:8px;white-space:pre-wrap;color:#C7D2F0;font-size:11.5px;max-height:220px;overflow:auto}
   .nota{font-size:12px;color:var(--suave);margin-top:8px}
-  .real{display:flex;gap:10px;align-items:flex-start;margin-top:14px;padding:10px 12px;border-radius:12px;background:#0A1124;border:1px solid var(--linea);cursor:pointer;text-transform:none;letter-spacing:0;font:400 12.5px/1.45 'IBM Plex Sans',sans-serif;color:var(--suave)}
-  .real input{width:18px;height:18px;margin-top:2px;accent-color:var(--verde);flex:none}
-  .real b{display:block;color:var(--texto);font-size:13px;margin-bottom:2px}
-  .real:has(input:checked){border-color:var(--verde)}
-  .modo{position:absolute;left:12px;bottom:12px;font:600 11px 'IBM Plex Mono';padding:4px 10px;border-radius:99px;background:var(--panel2);color:var(--suave)}
-  .modo.on{color:var(--verde)}
 </style>
 </head>
 <body>
-<div style="max-width:1280px;margin:0 auto">
-  <h1>Simulador DEMO · Vehículo IoT</h1>
-  <p class="sub">Crea un vehículo con sus comandos, arma una DEMO de N movimientos, la ejecuta y muestra en vivo los eventos que llegan por WebSocket.</p>
+<div class="cab">
+  <h1>Simulador DEMO 3D · Excavadora 970</h1>
+  <p class="sub">Arma tu propia DEMO paso por paso, previsualízala en 3D y ejecútala contra la API real: cada movimiento llega por WebSocket y, si eliges el carro real, la ESP32 lo ejecuta al mismo tiempo. Abajo se ven todas las consultas que se hicieron.</p>
 </div>
 <div class="grid">
-  <form class="panel" id="form">
-    <h2>Escenario</h2>
-    <label for="clave">X-API-Key</label>
-    <input id="clave" type="password" autocomplete="off" required>
-    <label for="nombre">Nombre del vehículo</label>
-    <input id="nombre" value="Carro simulado" maxlength="70" required>
-    <div class="fila">
-      <div><label for="n">Movimientos (N)</label><input id="n" type="number" min="1" max="30" value="6" required></div>
-      <div><label for="dur">Duración (ms)</label><input id="dur" type="number" min="200" max="5000" step="100" value="900" required></div>
-    </div>
-    <div class="fila">
-      <div><label for="pausa">Pausa (ms)</label><input id="pausa" type="number" min="0" max="3000" step="100" value="300" required></div>
-      <div><label for="patron">Secuencia</label>
-        <select id="patron"><option value="cuadro">Recorrido en cuadro</option><option value="zigzag">Zigzag</option><option value="azar">Al azar</option></select></div>
-    </div>
-    <label class="real" for="real"><input id="real" type="checkbox" checked>
-      <span><b>Ejecutar también en el carro real</b>La DEMO se arma en el vehículo 1, el que escucha la ESP32: se mueve en pantalla y en el carro al mismo tiempo.</span></label>
-    <button type="submit" id="go">Crear y ejecutar DEMO</button>
-    <button type="button" class="sec" id="cancelar" disabled>Cancelar DEMO</button>
-    <p class="nota">Cada paso llama a la API real (con sus Stored Procedures). Al final consulta el historial para comprobar que la DEMO no lo modificó.</p>
-    <h2 style="margin-top:18px">Pasos</h2>
-    <ol class="pasos" id="pasos"></ol>
-  </form>
+  <div style="display:grid;gap:14px;align-content:start">
+    <form class="panel" id="form">
+      <h2>Escenario</h2>
+      <label class="t" for="clave">X-API-Key</label>
+      <input id="clave" type="password" autocomplete="off" required>
+      <label class="real" for="real"><input id="real" type="checkbox" checked>
+        <span><b>Ejecutar también en el carro real</b>La DEMO se arma en el vehículo 1, el que escucha la ESP32: se mueve en 3D y en el carro al mismo tiempo.</span></label>
+      <div id="campo-nombre"><label class="t" for="nombre">Nombre del vehículo simulado</label><input id="nombre" value="Excavadora simulada" maxlength="60"></div>
 
-  <div class="derecha">
+      <h2 style="margin-top:16px">Tu DEMO <span class="der chip" id="n-pasos">0 movimientos</span></h2>
+      <div class="plantillas">
+        <button type="button" class="chico" data-plantilla="cuadro">Cuadro</button>
+        <button type="button" class="chico" data-plantilla="zigzag">Zigzag</button>
+        <button type="button" class="chico" data-plantilla="excavar">Excavar</button>
+        <button type="button" class="chico" data-plantilla="azar">Al azar</button>
+        <button type="button" class="chico" data-plantilla="vaciar">Vaciar</button>
+      </div>
+      <div class="pasos-demo" id="pasos-demo"></div>
+      <button type="button" class="sec" id="agregar">+ Agregar movimiento</button>
+      <div class="totales"><span id="total-tiempo">0.0 s</span><span>duración · pausa en ms</span></div>
+      <button type="button" class="sec" id="previa">Previsualizar en 3D (sin la API)</button>
+      <button type="submit" class="pri" id="go">Crear y ejecutar DEMO</button>
+      <button type="button" class="sec" id="cancelar" disabled>Cancelar DEMO</button>
+    </form>
+    <div class="panel">
+      <h2>Pasos</h2>
+      <ol class="lista-pasos" id="lista-pasos"><li><span class="ic">·</span>Arma la DEMO y pulsa «Crear y ejecutar DEMO».</li></ol>
+    </div>
+  </div>
+
+  <div style="min-width:0">
     <div class="panel">
       <h2>Vehículo en vivo</h2>
       <div class="escena" id="escena">
-        <div class="hud"><span id="hudVeh">Sin vehículo</span><b id="hudCmd">—</b><span id="hudPaso"></span></div>
-        <span class="estado off" id="wsEstado">WebSocket desconectado</span>
-        <span class="modo" id="modo">Solo simulación</span>
-        <svg id="carro" viewBox="0 0 64 40" aria-hidden="true">
-          <rect x="2" y="6" width="60" height="28" rx="8" fill="#3D7BFF"/>
-          <rect x="40" y="10" width="16" height="20" rx="4" fill="#BFD3FF"/>
-          <rect x="6" y="1" width="14" height="6" rx="2" fill="#0A1124"/><rect x="40" y="1" width="14" height="6" rx="2" fill="#0A1124"/>
-          <rect x="6" y="33" width="14" height="6" rx="2" fill="#0A1124"/><rect x="40" y="33" width="14" height="6" rx="2" fill="#0A1124"/>
-        </svg>
+        <div class="hud"><span id="hud-veh">Sin vehículo</span><b id="hud-cmd">Listo</b><span id="hud-paso">Arrastra para girar la cámara · rueda para acercar</span></div>
+        <div class="chipwrap"><span class="chip off" id="ws-estado">WebSocket desconectado</span><span class="chip" id="modo">Simulación</span></div>
+        <div class="controles3d">
+          <button type="button" class="chico" id="cam-seguir">Seguir: sí</button>
+          <button type="button" class="chico" id="cam-reset">Vista inicial</button>
+          <button type="button" class="chico" id="borrar-rastro">Borrar recorrido</button>
+        </div>
       </div>
       <div class="barra"><i id="barra"></i></div>
     </div>
-    <div class="panel">
-      <h2>Eventos WebSocket recibidos</h2>
-      <div class="log" id="log" aria-live="polite"></div>
+    <div class="registros">
+      <div class="panel"><h2>Consultas a la API <span class="der chip" id="n-consultas">0</span></h2><div class="log" id="log-api"><div class="vacio">Aquí aparecen los GET y POST que se envían.</div></div></div>
+      <div class="panel"><h2>Eventos WebSocket <span class="der chip" id="n-eventos">0</span></h2><div class="log" id="log-ws"><div class="vacio">Aquí llegan estado_actual, demo_inicio, cada demo_movimiento y demo_fin.</div></div></div>
     </div>
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script>
 (() => {
-  const $ = s => document.querySelector(s);
-  const API = location.origin;
-  const WS = API.replace(/^http/, 'ws');
-  try { $('#clave').value = localStorage.getItem('ctl.apikey') || ''; } catch {}
+'use strict';
+const $ = s => document.querySelector(s);
+const API = location.origin, WSB = API.replace(/^http/, 'ws');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const hora = () => new Date().toLocaleTimeString('es-MX', { hour12: false });
+const reducido = matchMedia('(prefers-reduced-motion: reduce)').matches;
+try { $('#clave').value = localStorage.getItem('ctl.apikey') || ''; } catch {}
 
-  // Catálogo de comandos que se da de alta en el vehículo nuevo
-  const CATALOGO = [
-    ['AVANZAR', 1, 'Avanzar en línea recta'], ['RETROCEDER', 2, 'Mover hacia atrás'],
-    ['GIRAR_IZQUIERDA', 3, 'Girar a la izquierda'], ['GIRAR_DERECHA', 4, 'Girar a la derecha'],
-    ['DETENER', 9, 'Detener el vehículo'],
-  ];
-  const PATRONES = {
-    cuadro: ['AVANZAR', 'GIRAR_DERECHA'],
-    zigzag: ['AVANZAR', 'GIRAR_IZQUIERDA', 'AVANZAR', 'GIRAR_DERECHA'],
-    azar: null,
-  };
+/* ================= Catálogo de comandos ================= */
+// Mismos nombres y códigos que el vehículo real (la ESP32 los reconoce por nombre)
+const CATALOGO = [
+  ['AVANZAR', 1, 'Avanzar en línea recta'], ['RETROCEDER', 2, 'Mover hacia atrás'],
+  ['GIRAR_IZQUIERDA', 3, 'Girar a la izquierda'], ['GIRAR_DERECHA', 4, 'Girar a la derecha'],
+  ['SUBIR_BRAZO', 5, 'Subir el brazo'], ['BAJAR_BRAZO', 6, 'Bajar el brazo'],
+  ['ABRIR_PALA', 7, 'Abrir la pala'], ['CERRAR_PALA', 8, 'Cerrar la pala'],
+  ['DETENER', 9, 'Detener el vehículo'], ['ROTAR_IZQUIERDA', 10, 'Rotar la cabina a la izquierda'],
+  ['ROTAR_DERECHA', 11, 'Rotar la cabina a la derecha'],
+];
+const NOMBRES = CATALOGO.map(c => c[0]);
+const bonito = n => n.charAt(0) + n.slice(1).toLowerCase().replace(/_/g, ' ');
 
-  // ---- pasos visibles ----
-  const pasos = $('#pasos');
-  function paso(txt, ruta) {
-    const li = document.createElement('li'); li.className = 'run';
-    li.innerHTML = `<span class="ic">…</span><span></span><code></code>`;
-    li.children[1].textContent = txt; li.children[2].textContent = ruta || '';
-    pasos.append(li);
-    return { ok(extra) { li.className = 'ok'; li.children[0].textContent = '✓'; if (extra) li.children[1].textContent += ' · ' + extra; },
-             err(m) { li.className = 'err'; li.children[0].textContent = '!'; li.children[1].textContent += ' · ' + m; } };
+/* ================= Escena 3D ================= */
+const cont = $('#escena');
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputEncoding = THREE.sRGBEncoding; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.9;
+cont.prepend(renderer.domElement);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0B1020); scene.fog = new THREE.Fog(0x0B1020, 26, 60);
+const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 200);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.08; controls.maxPolarAngle = Math.PI * 0.48; controls.minDistance = 4; controls.maxDistance = 40;
+const VISTA = () => { camera.position.set(8, 6.5, 9); controls.target.set(0, 0.8, 0); };
+VISTA();
+
+// Iluminación de estudio
+scene.add(new THREE.HemisphereLight(0xb8c8ff, 0x0a0f1c, 0.32));
+const sol = new THREE.DirectionalLight(0xfff4e0, 1.6);
+sol.position.set(8, 14, 6); sol.castShadow = true; sol.shadow.mapSize.set(2048, 2048);
+Object.assign(sol.shadow.camera, { left: -16, right: 16, top: 16, bottom: -16, near: 1, far: 50 }); sol.shadow.bias = -0.0004;
+scene.add(sol, sol.target);
+const relleno = new THREE.DirectionalLight(0x8fb2ff, 0.35); relleno.position.set(-8, 5, -6); scene.add(relleno);
+
+// Piso tipo tapete con cuadrícula
+const piso = new THREE.Mesh(new THREE.PlaneGeometry(120, 120), new THREE.MeshStandardMaterial({ color: 0x0c1220, roughness: 0.96, metalness: 0 }));
+piso.rotation.x = -Math.PI / 2; piso.receiveShadow = true; scene.add(piso);
+const rejilla = new THREE.GridHelper(120, 120, 0x2a3a5e, 0x1a2540); rejilla.position.y = 0.002; rejilla.material.transparent = true; rejilla.material.opacity = 0.35; scene.add(rejilla);
+
+// Materiales con propiedades físicas
+const M = {
+  amarillo: new THREE.MeshStandardMaterial({ color: 0xE8960C, roughness: 0.45, metalness: 0.1 }),
+  gris: new THREE.MeshStandardMaterial({ color: 0x5b6068, roughness: 0.55, metalness: 0.35 }),
+  grisOsc: new THREE.MeshStandardMaterial({ color: 0x2c3036, roughness: 0.7, metalness: 0.2 }),
+  oruga: new THREE.MeshStandardMaterial({ color: 0x1a1c20, roughness: 0.88, metalness: 0.1 }),
+  blanco: new THREE.MeshStandardMaterial({ color: 0xf2f2ee, roughness: 0.35, metalness: 0.05 }),
+  vidrio: new THREE.MeshStandardMaterial({ color: 0x0f1724, roughness: 0.08, metalness: 0.6 }),
+  metal: new THREE.MeshStandardMaterial({ color: 0x9ea3a8, roughness: 0.32, metalness: 0.85 }),
+  rojo: new THREE.MeshStandardMaterial({ color: 0xc8242f, roughness: 0.4, metalness: 0.1, emissive: 0x300000 }),
+};
+const caja = (w, h, d, mat, x = 0, y = 0, z = 0, padre) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; if (padre) padre.add(m); return m; };
+const cil = (r, l, mat, padre, eje = 'x') => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, l, 24), mat); if (eje === 'x') m.rotation.z = Math.PI / 2; if (eje === 'z') m.rotation.x = Math.PI / 2; m.castShadow = true; if (padre) padre.add(m); return m; };
+
+// Calcomanía "970 TOP" dibujada en un canvas
+function calcomania(texto, sub) {
+  const c = document.createElement('canvas'); c.width = 256; c.height = 128; const g = c.getContext('2d');
+  g.clearRect(0, 0, 256, 128); g.fillStyle = '#1b1b1b'; g.font = '700 70px Arial'; g.fillText(texto, 18, 82);
+  if (sub) { g.font = '700 22px Arial'; g.fillText(sub, 170, 104); }
+  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 4;
+  return new THREE.MeshBasicMaterial({ map: t, transparent: true });
+}
+
+/* --- Modelo de la excavadora (unidades ≈ 10 cm) --- */
+const vehiculo = new THREE.Group(); scene.add(vehiculo);
+const ruedas = [];
+// Tren de orugas (el frente del vehículo mira hacia -Z)
+[-1, 1].forEach(lado => {
+  const orug = new THREE.Group(); orug.position.x = lado * 0.72; vehiculo.add(orug);
+  caja(0.42, 0.42, 2.5, M.oruga, 0, 0.28, 0, orug);
+  [-1.1, 1.1].forEach(z => { const r = cil(0.21, 0.44, M.oruga, orug); r.position.set(0, 0.28, z); });
+  caja(0.44, 0.16, 1.7, M.grisOsc, 0, 0.32, 0, orug);
+  for (let i = -3; i <= 3; i++) { const r = cil(0.1, 0.46, M.gris, orug); r.position.set(0, 0.24, i * 0.3); ruedas.push(r); }
+  for (let i = 0; i < 16; i++) { caja(0.43, 0.04, 0.09, M.grisOsc, 0, 0.5, -1.15 + i * 0.153, orug); caja(0.43, 0.04, 0.09, M.grisOsc, 0, 0.06, -1.15 + i * 0.153, orug); }
+});
+caja(1.0, 0.24, 1.5, M.grisOsc, 0, 0.42, 0, vehiculo);                      // chasis central
+const giro = cil(0.5, 0.1, M.gris, vehiculo, 'y'); giro.position.y = 0.58;  // corona de giro
+
+// Torreta (rota sobre Y)
+const torreta = new THREE.Group(); torreta.position.y = 0.63; vehiculo.add(torreta);
+caja(1.62, 0.2, 2.15, M.grisOsc, 0, 0.08, 0.05, torreta);                     // plataforma
+caja(1.55, 0.5, 1.35, M.amarillo, 0.05, 0.42, 0.42, torreta);                 // cuerpo trasero
+caja(1.58, 0.42, 0.32, M.amarillo, 0.05, 0.38, 1.18, torreta);                // contrapeso
+caja(1.0, 0.18, 0.9, M.gris, 0.2, 0.76, 0.48, torreta);                       // cubierta del motor
+for (let i = 0; i < 4; i++) caja(0.12, 0.05, 0.8, M.grisOsc, -0.1 + i * 0.18, 0.87, 0.48, torreta);
+[-0.55, 0.55].forEach(x => { const f = caja(0.12, 0.08, 0.04, M.rojo, x, 0.44, 1.35, torreta); f.castShadow = false; });
+const rejillaT = caja(0.42, 0.3, 0.04, M.grisOsc, 0.62, 0.42, -0.25, torreta); rejillaT.rotation.y = 0.02;
+// Cabina blanca a la izquierda del frente
+const cabina = caja(0.6, 0.62, 0.72, M.blanco, -0.48, 0.5, -0.55, torreta);
+caja(0.62, 0.36, 0.5, M.vidrio, -0.48, 0.62, -0.62, torreta).scale.set(1.01, 1, 1.01);
+caja(0.04, 0.34, 0.5, M.vidrio, -0.79, 0.6, -0.55, torreta);
+caja(0.6, 0.04, 0.74, M.grisOsc, -0.48, 0.83, -0.55, torreta);
+// Calcomanías laterales
+const d1 = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.3), calcomania('970', 'TOP')); d1.position.set(0.84, 0.42, 0.55); d1.rotation.y = Math.PI / 2; torreta.add(d1);
+const d2 = d1.clone(); d2.position.x = -0.84 + 0.04; d2.position.z = 0.45; d2.rotation.y = -Math.PI / 2; torreta.add(d2);
+
+// Brazo: pluma (boom) → balancín (arm) → pala (bucket)
+const pluma = new THREE.Group(); pluma.position.set(0.18, 0.55, -0.72); torreta.add(pluma);
+caja(0.26, 0.26, 0.3, M.grisOsc, 0, 0, 0, pluma);
+const plumaSeg1 = caja(0.24, 0.3, 1.5, M.amarillo, 0, 0.55, -0.55, pluma); plumaSeg1.rotation.x = 0.85;
+const plumaSeg2 = caja(0.22, 0.28, 1.1, M.amarillo, 0, 1.0, -1.55, pluma); plumaSeg2.rotation.x = -0.35;
+const pist1 = cil(0.05, 1.05, M.grisOsc, pluma, 'z'); pist1.position.set(0, 0.25, -0.75); pist1.rotation.x = Math.PI / 2 + 0.95;
+const brazo = new THREE.Group(); brazo.position.set(0, 1.18, -2.05); pluma.add(brazo);
+caja(0.2, 0.24, 0.28, M.grisOsc, 0, 0, 0, brazo);
+caja(0.2, 1.25, 0.24, M.amarillo, 0, -0.55, 0, brazo);
+const pist2 = cil(0.045, 0.9, M.grisOsc, brazo, 'y'); pist2.position.set(0, -0.35, 0.2);
+const pala = new THREE.Group(); pala.position.set(0, -1.18, 0); brazo.add(pala);
+caja(0.22, 0.14, 0.2, M.grisOsc, 0, 0, 0, pala);
+const palaCuerpo = new THREE.Group(); palaCuerpo.position.set(0, -0.1, -0.22); pala.add(palaCuerpo);
+caja(0.42, 0.06, 0.46, M.metal, 0, -0.18, 0, palaCuerpo);
+caja(0.42, 0.34, 0.06, M.metal, 0, 0, 0.21, palaCuerpo);
+[-0.2, 0.2].forEach(x => caja(0.03, 0.34, 0.46, M.metal, x, -0.02, 0, palaCuerpo));
+for (let i = 0; i < 5; i++) { const d = caja(0.05, 0.05, 0.12, M.metal, -0.16 + i * 0.08, -0.2, -0.27, palaCuerpo); d.rotation.x = 0.4; }
+
+vehiculo.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+
+/* --- Estado físico y articulaciones --- */
+const POS0 = { x: 0, z: 0, rumbo: 0, torreta: 0, pluma: 0, brazo: 0, pala: 0 };
+const fis = { ...POS0 };
+const LIM = { pluma: [-0.55, 0.45], brazo: [-0.5, 0.7], pala: [-1.0, 0.9] };
+function aplicar() {
+  vehiculo.position.set(fis.x, 0, fis.z); vehiculo.rotation.y = fis.rumbo;
+  torreta.rotation.y = fis.torreta; pluma.rotation.x = fis.pluma; brazo.rotation.x = fis.brazo; pala.rotation.x = fis.pala;
+}
+aplicar();
+
+/* --- Recorrido marcado en el piso (cinta brillante) --- */
+const MAXP = 3000, ANCHO = 0.09;
+const pts = [];
+const cintaGeo = new THREE.BufferGeometry();
+cintaGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(MAXP * 2 * 3), 3));
+cintaGeo.setIndex(new THREE.BufferAttribute(new Uint32Array((MAXP - 1) * 6), 1));
+const cinta = new THREE.Mesh(cintaGeo, new THREE.MeshBasicMaterial({ color: 0x2FD38A, transparent: true, opacity: 0.92, side: THREE.DoubleSide, depthWrite: false }));
+cinta.frustumCulled = false; cinta.renderOrder = 2; scene.add(cinta);
+
+function rehacerCinta() {
+  const pos = cintaGeo.attributes.position.array, idx = cintaGeo.index.array, n = pts.length;
+  for (let i = 0; i < n; i++) {
+    const a = pts[Math.max(0, i - 1)], c = pts[Math.min(n - 1, i + 1)];
+    let dx = c[0] - a[0], dz = c[1] - a[1]; const L = Math.hypot(dx, dz) || 1; dx /= L; dz /= L;
+    const nx = -dz * ANCHO, nz = dx * ANCHO, k = i * 6;
+    pos[k] = pts[i][0] + nx; pos[k + 1] = 0.015; pos[k + 2] = pts[i][1] + nz;
+    pos[k + 3] = pts[i][0] - nx; pos[k + 4] = 0.015; pos[k + 5] = pts[i][1] - nz;
   }
+  for (let i = 0; i < n - 1; i++) { const v = i * 2, k = i * 6; idx[k] = v; idx[k + 1] = v + 1; idx[k + 2] = v + 2; idx[k + 3] = v + 1; idx[k + 4] = v + 3; idx[k + 5] = v + 2; }
+  cintaGeo.setDrawRange(0, Math.max(0, n - 1) * 6);
+  cintaGeo.attributes.position.needsUpdate = true; cintaGeo.index.needsUpdate = true;
+}
+function puntoRastro() {
+  if (pts.length >= MAXP) return;
+  const u = pts.at(-1);
+  if (u && Math.hypot(u[0] - fis.x, u[1] - fis.z) < 0.05) return;
+  pts.push([fis.x, fis.z]); rehacerCinta();
+}
+const marcas = new THREE.Group(); scene.add(marcas);
+function marca(num, color = '#FFB547') {
+  const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d');
+  g.fillStyle = color; g.beginPath(); g.arc(32, 32, 28, 0, Math.PI * 2); g.fill(); g.fillStyle = '#0A0E18'; g.font = '700 30px Arial'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(num, 32, 34);
+  const t = new THREE.CanvasTexture(c); const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false }));
+  s.position.set(fis.x, 0.35, fis.z); s.scale.set(0.42, 0.42, 1); marcas.add(s);
+  const disco = new THREE.Mesh(new THREE.CircleGeometry(0.12, 24), new THREE.MeshBasicMaterial({ color })); disco.rotation.x = -Math.PI / 2; disco.position.set(fis.x, 0.021, fis.z); marcas.add(disco);
+}
+function borrarRastro() { pts.length = 0; rehacerCinta(); marcas.clear(); puntoRastro(); }
+puntoRastro();
 
-  // ---- llamadas a la API ----
-  async function api(metodo, ruta, cuerpo) {
-    const r = await fetch(API + ruta, { method: metodo,
-      headers: { 'Content-Type': 'application/json', 'X-API-Key': $('#clave').value.trim() },
-      body: cuerpo ? JSON.stringify(cuerpo) : undefined });
-    const datos = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(`${r.status} ${datos.detail ? (typeof datos.detail === 'string' ? datos.detail : 'datos inválidos') : ''}`.trim());
-    return datos;
-  }
-  const idDe = (o, k) => o[k] ?? o.id ?? (o.datos && o.datos[k]) ?? (o.vehiculo && o.vehiculo[k]) ?? (o.demo && o.demo[k]) ?? (o.comando && o.comando[k]);
+/* --- Animación de un movimiento --- */
+const VEL = { avance: 1.4, giro: 1.2, torreta: 1.3, art: 0.9 };       // unidades/s y rad/s
+let accion = null;   // { cmd, fin }
+function animarComando(cmd, ms) { const t = performance.now(); if (accion) avanzarHasta(t); accion = { cmd, inicio: t, fin: t + ms, ult: t }; $('#hud-cmd').textContent = bonito(cmd); }
+const clamp = (v, [a, b]) => Math.min(b, Math.max(a, v));
+// El movimiento depende del tiempo real, no de los cuadros dibujados: aunque el navegador
+// vaya lento, cada paso recorre exactamente su duración (se integra en sub-pasos de 1/60 s).
+function avanzarHasta(ahora) {
+  if (!accion) return;
+  const t = Math.min(ahora, accion.fin);
+  let resto = (t - accion.ult) / 1000; accion.ult = t;
+  while (resto > 1e-6) { const dt = Math.min(resto, 1 / 60); paso(dt); resto -= dt; }
+  if (ahora >= accion.fin) accion = null;
+}
+function paso(dt) {
+  if (!accion) return;
+  const c = accion.cmd;
+  if (c === 'AVANZAR' || c === 'RETROCEDER') {
+    const s = (c === 'AVANZAR' ? 1 : -1) * VEL.avance * dt;
+    fis.x -= Math.sin(fis.rumbo) * s; fis.z -= Math.cos(fis.rumbo) * s;
+    ruedas.forEach(r => r.rotation.x -= s * 5); puntoRastro();
+  } else if (c === 'GIRAR_IZQUIERDA') { fis.rumbo += VEL.giro * dt; ruedas.forEach(r => r.rotation.x -= dt * 2); }
+  else if (c === 'GIRAR_DERECHA') { fis.rumbo -= VEL.giro * dt; ruedas.forEach(r => r.rotation.x += dt * 2); }
+  else if (c === 'ROTAR_IZQUIERDA') fis.torreta += VEL.torreta * dt;
+  else if (c === 'ROTAR_DERECHA') fis.torreta -= VEL.torreta * dt;
+  else if (c === 'SUBIR_BRAZO') { fis.pluma = clamp(fis.pluma + VEL.art * dt, LIM.pluma); fis.brazo = clamp(fis.brazo - VEL.art * 0.5 * dt, LIM.brazo); }
+  else if (c === 'BAJAR_BRAZO') { fis.pluma = clamp(fis.pluma - VEL.art * dt, LIM.pluma); fis.brazo = clamp(fis.brazo + VEL.art * 0.5 * dt, LIM.brazo); }
+  else if (c === 'ABRIR_PALA') fis.pala = clamp(fis.pala + VEL.art * 1.4 * dt, LIM.pala);
+  else if (c === 'CERRAR_PALA') fis.pala = clamp(fis.pala - VEL.art * 1.4 * dt, LIM.pala);
+  aplicar();
+}
 
-  // ---- escena ----
-  let pos = { x: 0, y: 0, ang: 0 };
-  const carro = $('#carro');
-  function mover(cmd) {
-    const paso = 34, rad = pos.ang * Math.PI / 180;
-    if (cmd === 'AVANZAR') { pos.x += Math.cos(rad) * paso; pos.y += Math.sin(rad) * paso; }
-    if (cmd === 'RETROCEDER') { pos.x -= Math.cos(rad) * paso; pos.y -= Math.sin(rad) * paso; }
-    if (cmd === 'GIRAR_DERECHA') pos.ang += 90;
-    if (cmd === 'GIRAR_IZQUIERDA') pos.ang -= 90;
-    const esc = $('#escena').getBoundingClientRect(), mx = esc.width / 2 - 40, my = esc.height / 2 - 30;
-    pos.x = Math.max(-mx, Math.min(mx, pos.x)); pos.y = Math.max(-my, Math.min(my, pos.y));
-    carro.style.transform = `translate(${pos.x}px,${pos.y}px) rotate(${pos.ang}deg)`;
-  }
-  function log(m) {
-    const d = document.createElement('div');
-    const hora = new Date().toLocaleTimeString('es-MX', { hour12: false });
-    const { evento, id_vehiculo, ts, marca_tiempo, ...resto } = m;
-    d.innerHTML = `<span class="t">${hora}</span> <span class="e ${evento}">${evento}</span> `;
-    d.append(document.createTextNode(JSON.stringify(resto)));
-    $('#log').prepend(d);
-  }
+/* --- Bucle de render (60 FPS, se pausa si la pestaña no se ve) --- */
+let seguir = true, ultimo = performance.now();
+const objetivo = new THREE.Vector3();
+function tamano() { const r = cont.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); camera.aspect = r.width / r.height; camera.updateProjectionMatrix(); }
+new ResizeObserver(tamano).observe(cont); tamano();
+function cuadro(t) {
+  const dt = Math.min(0.05, (t - ultimo) / 1000); ultimo = t;
+  avanzarHasta(t);
+  if (seguir) { objetivo.set(fis.x, 0.8, fis.z); const d = objetivo.clone().sub(controls.target); controls.target.add(d.multiplyScalar(0.08)); camera.position.add(d); sol.position.set(fis.x + 8, 14, fis.z + 6); sol.target.position.set(fis.x, 0, fis.z); }
+  controls.update(); renderer.render(scene, camera);
+  requestAnimationFrame(cuadro);
+}
+requestAnimationFrame(cuadro);
+$('#cam-seguir').onclick = () => { seguir = !seguir; $('#cam-seguir').textContent = 'Seguir: ' + (seguir ? 'sí' : 'no'); };
+$('#cam-reset').onclick = () => { camera.position.set(fis.x + 8, 6.5, fis.z + 9); controls.target.set(fis.x, 0.8, fis.z); };
+$('#borrar-rastro').onclick = borrarRastro;
 
-  // ---- WebSocket ----
-  let ws = null, idV = null;
-  function conectarWS(id) {
-    return new Promise((ok, mal) => {
-      ws = new WebSocket(`${WS}/ws/vehiculos/${id}`);
-      ws.onopen = () => { $('#wsEstado').textContent = `WS conectado · vehículo ${id}`; $('#wsEstado').className = 'estado on'; ok(); };
-      ws.onerror = () => mal(new Error('No se pudo abrir el WebSocket'));
-      ws.onclose = () => { $('#wsEstado').textContent = 'WebSocket desconectado'; $('#wsEstado').className = 'estado off'; };
-      ws.onmessage = ev => {
-        let m; try { m = JSON.parse(ev.data); } catch { return; }
-        if (m.evento === 'pong') return;
-        log(m);
-        if (m.evento === 'demo_movimiento') {
-          mover(m.comando); $('#hudCmd').textContent = m.comando;
-          $('#hudPaso').textContent = `Paso ${m.numero} de ${m.total_movimientos} · ${m.duracion_ms} ms + ${m.pausa_ms} ms`;
-          $('#barra').style.width = (m.numero / m.total_movimientos * 100) + '%';
-        }
-        if (m.evento === 'estado_actual') {
-          $('#hudCmd').textContent = m.comando || 'Sin movimientos';
-          // En el vehículo 1 también cuenta la ESP32 si está encendida y conectada
-          if (idV === 1) $('#hudPaso').textContent = `Clientes en el vehículo 1: ${m.clientes ?? '—'} (la ESP32 cuenta como uno)`;
-        }
-        if (m.evento === 'demo_fin' || m.evento === 'demo_cancelada' || m.evento === 'demo_error') terminar(m.evento);
-      };
-    });
-  }
-  let alTerminar = null;
-  function terminar(ev) { $('#cancelar').disabled = true; if (alTerminar) alTerminar(ev); }
+/* ================= Constructor de DEMO ================= */
+let pasos = [];
+const PLANTILLAS = {
+  cuadro: () => [...Array(4)].flatMap(() => [['AVANZAR', 1200, 250], ['GIRAR_DERECHA', 1300, 250]]).concat([['DETENER', 400, 0]]),
+  zigzag: () => [['AVANZAR', 1000, 200], ['GIRAR_IZQUIERDA', 650, 200], ['AVANZAR', 1000, 200], ['GIRAR_DERECHA', 1300, 200], ['AVANZAR', 1000, 200], ['GIRAR_IZQUIERDA', 650, 200], ['AVANZAR', 1000, 200], ['DETENER', 400, 0]],
+  excavar: () => [['AVANZAR', 1200, 300], ['BAJAR_BRAZO', 900, 250], ['CERRAR_PALA', 700, 250], ['SUBIR_BRAZO', 900, 250], ['ROTAR_IZQUIERDA', 1200, 250], ['ABRIR_PALA', 700, 250], ['ROTAR_DERECHA', 1200, 250], ['DETENER', 400, 0]],
+  vaciar: () => [['SUBIR_BRAZO', 800, 200], ['ROTAR_DERECHA', 1000, 200], ['ABRIR_PALA', 800, 300], ['CERRAR_PALA', 800, 200], ['ROTAR_IZQUIERDA', 1000, 200], ['BAJAR_BRAZO', 800, 200], ['DETENER', 400, 0]],
+  azar: () => { const m = NOMBRES.filter(n => n !== 'DETENER'); return [...Array(7)].map(() => [m[Math.floor(Math.random() * m.length)], 700 + Math.round(Math.random() * 8) * 100, 200]).concat([['DETENER', 400, 0]]); },
+};
+function pintarPasos() {
+  const caja = $('#pasos-demo');
+  caja.innerHTML = pasos.map((p, i) => `<div class="paso" data-i="${i}">
+    <span class="n">${i + 1}</span>
+    <select data-k="cmd" aria-label="Movimiento ${i + 1}">${NOMBRES.map(n => `<option value="${n}" ${n === p.cmd ? 'selected' : ''}>${bonito(n)}</option>`).join('')}</select>
+    <input data-k="dur" type="number" min="100" max="60000" step="100" value="${p.dur}" aria-label="Duración del paso ${i + 1} en ms" title="Duración (ms)">
+    <input data-k="pausa" type="number" min="0" max="60000" step="100" value="${p.pausa}" aria-label="Pausa después del paso ${i + 1} en ms" title="Pausa (ms)">
+    <span class="acc"><button type="button" data-a="sube" title="Subir" ${i === 0 ? 'disabled' : ''}>↑</button><button type="button" data-a="baja" title="Bajar" ${i === pasos.length - 1 ? 'disabled' : ''}>↓</button><button type="button" data-a="quita" title="Quitar">×</button></span>
+  </div>`).join('') || '<div class="nota">Agrega movimientos o elige una plantilla.</div>';
+  const total = pasos.reduce((a, p) => a + (+p.dur || 0) + (+p.pausa || 0), 0);
+  $('#n-pasos').textContent = `${pasos.length} ${pasos.length === 1 ? 'movimiento' : 'movimientos'}`;
+  $('#total-tiempo').textContent = `${(total / 1000).toFixed(1)} s en total`;
+  $('#go').disabled = !pasos.length;
+}
+$('#pasos-demo').addEventListener('input', e => { const f = e.target.closest('.paso'); if (!f) return; const p = pasos[+f.dataset.i]; const k = e.target.dataset.k; p[k] = k === 'cmd' ? e.target.value : Math.max(0, +e.target.value || 0); const total = pasos.reduce((a, q) => a + (+q.dur || 0) + (+q.pausa || 0), 0); $('#total-tiempo').textContent = `${(total / 1000).toFixed(1)} s en total`; });
+$('#pasos-demo').addEventListener('click', e => {
+  const b = e.target.closest('[data-a]'); if (!b) return; const i = +b.closest('.paso').dataset.i;
+  if (b.dataset.a === 'quita') pasos.splice(i, 1);
+  if (b.dataset.a === 'sube' && i > 0) [pasos[i - 1], pasos[i]] = [pasos[i], pasos[i - 1]];
+  if (b.dataset.a === 'baja' && i < pasos.length - 1) [pasos[i + 1], pasos[i]] = [pasos[i], pasos[i + 1]];
+  pintarPasos();
+});
+$('#agregar').onclick = () => { if (pasos.length >= 40) return; const ult = pasos.at(-1); pasos.push({ cmd: ult && ult.cmd === 'AVANZAR' ? 'GIRAR_DERECHA' : 'AVANZAR', dur: 1000, pausa: 250 }); pintarPasos(); $('#pasos-demo').scrollTop = 1e6; };
+document.querySelectorAll('[data-plantilla]').forEach(b => b.onclick = () => { pasos = PLANTILLAS[b.dataset.plantilla]().map(([cmd, dur, pausa]) => ({ cmd, dur, pausa })); pintarPasos(); });
+pasos = PLANTILLAS.excavar().map(([cmd, dur, pausa]) => ({ cmd, dur, pausa })); pintarPasos();
+const marcarPaso = (i, clase) => { document.querySelectorAll('.paso').forEach((el, k) => { el.classList.toggle('activo', k === i && clase === 'activo'); if (k < i) el.classList.add('hecho'); }); };
+const limpiarPasos = () => document.querySelectorAll('.paso').forEach(el => el.classList.remove('activo', 'hecho'));
 
-  // ---- flujo completo ----
-  $('#form').addEventListener('submit', async e => {
-    e.preventDefault();
-    const n = +$('#n').value, dur = +$('#dur').value, pausa = +$('#pausa').value;
-    if (!$('#clave').value.trim()) return;
-    $('#go').disabled = true; pasos.innerHTML = ''; $('#log').innerHTML = ''; $('#barra').style.width = '0';
-    pos = { x: 0, y: 0, ang: 0 }; carro.style.transform = '';
-    if (ws) ws.close();
-    const real = $('#real').checked;
-    $('#modo').textContent = real ? 'Simulación + carro real (ESP32)' : 'Solo simulación';
-    $('#modo').className = 'modo' + (real ? ' on' : '');
-    try {
-      let p, ids = {}, d;
-      if (real) {
-        // El carro real (ESP32) escucha el WebSocket del vehículo 1: la DEMO se arma ahí
-        idV = 1;
-        p = paso('Usar el carro real', 'GET /vehiculos/1/comandos');
-        const cmds = await api('GET', '/vehiculos/1/comandos');
-        for (const c of cmds) if (c.activo !== false) ids[c.nombre] = c.id_comando;
-        const faltan = CATALOGO.map(c => c[0]).filter(nm => !ids[nm]);
-        if (faltan.length) throw new Error(`Al vehículo 1 le faltan los comandos: ${faltan.join(', ')}`);
-        p.ok(`vehículo 1 · ${cmds.length} comandos`); $('#hudVeh').textContent = 'Vehículo 1 · carro real';
+/* ================= Registros: consultas y eventos ================= */
+let nQ = 0, nE = 0;
+function logConsulta({ metodo, ruta, cuerpo, status, ms, resp }) {
+  const caja = $('#log-api'); caja.querySelector('.vacio')?.remove();
+  const d = document.createElement('details'); d.className = 'q';
+  const ok = status >= 200 && status < 300;
+  d.innerHTML = `<summary><span class="met ${metodo}">${metodo}</span><span class="st ${ok ? 'ok' : 'mal'}">${status || '—'}</span><span class="ruta" title="${esc(ruta)}">${esc(ruta)}</span><span class="ms">${ms != null ? ms + ' ms' : ''}</span></summary>
+    ${cuerpo !== undefined ? `<pre>Body\n${esc(typeof cuerpo === 'string' ? cuerpo : JSON.stringify(cuerpo, null, 2))}</pre>` : ''}
+    ${resp !== undefined ? `<pre>Respuesta\n${esc(typeof resp === 'string' ? resp : JSON.stringify(resp, null, 2).slice(0, 2500))}</pre>` : ''}`;
+  caja.prepend(d); $('#n-consultas').textContent = ++nQ;
+}
+function logEvento(m) {
+  const caja = $('#log-ws'); caja.querySelector('.vacio')?.remove();
+  const { evento, id_vehiculo, timestamp, ...resto } = m;
+  const d = document.createElement('div'); d.className = 'ev';
+  d.innerHTML = `<span class="t">${hora()}</span> <span class="e ${esc(evento)}">${esc(evento)}</span> `;
+  d.append(document.createTextNode(JSON.stringify(resto))); caja.prepend(d); $('#n-eventos').textContent = ++nE;
+}
 
-        // Se reemplaza siempre la misma DEMO del simulador para no acumularlas
-        p = paso('Preparar la DEMO del simulador', 'POST /demos');
-        const previas = (await api('GET', '/vehiculos/1/demos')).filter(x => x.nombre === 'DEMO del simulador');
-        for (const x of previas) await api('POST', `/vehiculos/1/demos/${x.id_demo}/eliminar`);
-        d = await api('POST', '/vehiculos/1/demos', { nombre: 'DEMO del simulador', descripcion: `${n} movimientos generados por el simulador` });
-      } else {
-        p = paso('Crear vehículo', 'POST /vehiculos');
-        const v = await api('POST', '/vehiculos', { nombre: `${$('#nombre').value.trim()} ${new Date().toLocaleTimeString('es-MX', { hour12: false })}`,
-          modelo: 'Simulador', descripcion: 'Vehículo creado por el simulador de DEMO', microcontrolador: 'ESP32' });
-        idV = idDe(v, 'id_vehiculo'); p.ok(`id ${idV}`); $('#hudVeh').textContent = `Vehículo ${idV}`;
+/* ================= API ================= */
+async function api(metodo, ruta, cuerpo) {
+  const t0 = performance.now();
+  const r = await fetch(API + ruta, { method: metodo, headers: { 'Content-Type': 'application/json', 'X-API-Key': $('#clave').value.trim() }, body: cuerpo ? JSON.stringify(cuerpo) : undefined });
+  const datos = await r.json().catch(() => ({}));
+  logConsulta({ metodo, ruta, cuerpo, status: r.status, ms: Math.round(performance.now() - t0), resp: datos });
+  if (!r.ok) throw new Error(`${r.status} ${typeof datos.detail === 'string' ? datos.detail : 'datos inválidos'}`.trim());
+  return datos;
+}
+const idDe = (o, k) => o[k] ?? o.id ?? (o.datos && o.datos[k]) ?? (o.vehiculo && o.vehiculo[k]) ?? (o.demo && o.demo[k]) ?? (o.comando && o.comando[k]);
 
-        p = paso(`Registrar ${CATALOGO.length} comandos`, 'POST /comandos');
-        for (const [nombre, codigo, descripcion] of CATALOGO) {
-          const c = await api('POST', `/vehiculos/${idV}/comandos`, { nombre, codigo, descripcion });
-          ids[nombre] = idDe(c, 'id_comando');
-        }
-        p.ok(Object.keys(ids).length + ' comandos');
+function pasoLista(txt, ruta) {
+  const li = document.createElement('li'); li.className = 'run';
+  li.innerHTML = '<span class="ic">…</span><span></span><code></code>'; li.children[1].textContent = txt; li.children[2].textContent = ruta || '';
+  $('#lista-pasos').append(li);
+  return { ok(x) { li.className = 'ok'; li.children[0].textContent = '✓'; if (x) li.children[1].textContent += ' · ' + x; }, err(m) { li.className = 'err'; li.children[0].textContent = '!'; li.children[1].textContent += ' · ' + m; } };
+}
 
-        p = paso('Crear DEMO', 'POST /demos');
-        d = await api('POST', `/vehiculos/${idV}/demos`, { nombre: `DEMO de ${n} movimientos`, descripcion: 'Generada por el simulador' });
+/* ================= WebSocket ================= */
+let ws = null, idV = null, alTerminar = null;
+function conectarWS(id) {
+  return new Promise((ok, mal) => {
+    const url = `${WSB}/ws/vehiculos/${id}`; const t0 = performance.now();
+    ws = new WebSocket(url);
+    ws.onopen = () => { $('#ws-estado').textContent = `WS conectado · vehículo ${id}`; $('#ws-estado').className = 'chip on'; logConsulta({ metodo: 'WS', ruta: url.replace(API.replace(/^http/, 'ws'), ''), status: 101, ms: Math.round(performance.now() - t0), resp: 'Conexión abierta (101 Switching Protocols)' }); ok(); };
+    ws.onerror = () => mal(new Error('No se pudo abrir el WebSocket'));
+    ws.onclose = () => { $('#ws-estado').textContent = 'WebSocket desconectado'; $('#ws-estado').className = 'chip off'; };
+    ws.onmessage = ev => {
+      let m; try { m = JSON.parse(ev.data); } catch { return; }
+      if (m.evento === 'pong') return;
+      logEvento(m);
+      if (m.evento === 'estado_actual') { $('#hud-cmd').textContent = m.comando ? bonito(m.comando) : 'Sin movimientos'; if (idV === 1) $('#hud-paso').textContent = `Clientes en el vehículo 1: ${m.clientes ?? '—'} (la ESP32 cuenta como uno)`; }
+      if (m.evento === 'demo_inicio') { borrarRastro(); }
+      if (m.evento === 'demo_movimiento') {
+        marca(m.numero); animarComando(m.comando, m.duracion_ms); marcarPaso(m.numero - 1, 'activo');
+        $('#hud-paso').textContent = `Paso ${m.numero} de ${m.total_movimientos} · ${m.duracion_ms} ms + ${m.pausa_ms} ms`;
+        $('#barra').style.width = (m.numero / m.total_movimientos * 100) + '%';
       }
-      const idD = idDe(d, 'id_demo'); p.ok(`id ${idD}`);
+      if (m.evento === 'movimiento') animarComando(m.comando, 700);
+      if (['demo_fin', 'demo_cancelada', 'demo_error'].includes(m.evento)) { $('#cancelar').disabled = true; marcarPaso(pasos.length, 'hecho'); alTerminar?.(m.evento); }
+    };
+  });
+}
+setInterval(() => ws && ws.readyState === 1 && ws.send('ping'), 25000);
 
-      p = paso(`Agregar ${n} movimientos`, 'POST /demos/{id}/movimientos');
-      const patron = PATRONES[$('#patron').value];
-      const movibles = ['AVANZAR', 'RETROCEDER', 'GIRAR_IZQUIERDA', 'GIRAR_DERECHA'];
-      for (let i = 1; i <= n; i++) {
-        let cmd = i === n ? 'DETENER' : patron ? patron[(i - 1) % patron.length] : movibles[Math.floor(Math.random() * movibles.length)];
-        await api('POST', `/vehiculos/${idV}/demos/${idD}/movimientos`, { id_comando: ids[cmd], orden: i, duracion_ms: dur, pausa_ms: pausa });
+/* ================= Previsualización local ================= */
+let previaActiva = false;
+$('#previa').onclick = async () => {
+  if (previaActiva || !pasos.length) return; previaActiva = true; $('#previa').disabled = true;
+  Object.assign(fis, POS0); aplicar(); borrarRastro(); limpiarPasos(); $('#modo').textContent = 'Previsualización (sin la API)';
+  for (let i = 0; i < pasos.length; i++) {
+    const p = pasos[i]; marca(i + 1, '#7EA5FF'); marcarPaso(i, 'activo'); animarComando(p.cmd, +p.dur);
+    $('#hud-paso').textContent = `Previsualización · paso ${i + 1} de ${pasos.length}`; $('#barra').style.width = ((i + 1) / pasos.length * 100) + '%';
+    await new Promise(r => setTimeout(r, (+p.dur) + (+p.pausa)));
+  }
+  marcarPaso(pasos.length, 'hecho'); $('#hud-cmd').textContent = 'Previsualización terminada'; previaActiva = false; $('#previa').disabled = false;
+};
+
+/* ================= Flujo completo contra la API ================= */
+function actualizarModo() { const r = $('#real').checked; $('#campo-nombre').hidden = r; $('#modo').textContent = r ? 'Simulación + carro real (ESP32)' : 'Solo simulación'; $('#modo').className = 'chip' + (r ? ' on' : ''); }
+$('#real').addEventListener('change', actualizarModo); actualizarModo();
+
+$('#form').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (!$('#clave').value.trim() || !pasos.length) return;
+  const real = $('#real').checked; actualizarModo();
+  $('#go').disabled = true; $('#lista-pasos').innerHTML = ''; $('#barra').style.width = '0';
+  Object.assign(fis, POS0); aplicar(); borrarRastro(); limpiarPasos();
+  if (ws) { ws.onclose = null; ws.close(); }
+  try {
+    let p, ids = {}, d;
+    const necesarios = [...new Set(pasos.map(x => x.cmd))];
+    if (real) {
+      idV = 1;
+      p = pasoLista('Usar el carro real', 'GET /vehiculos/1/comandos');
+      const cmds = await api('GET', '/vehiculos/1/comandos');
+      for (const c of cmds) if (c.activo !== false) ids[c.nombre] = c.id_comando;
+      const faltan = necesarios.filter(n => !ids[n]);
+      if (faltan.length) throw new Error(`Al vehículo 1 le faltan los comandos: ${faltan.join(', ')}`);
+      p.ok(`vehículo 1 · ${cmds.length} comandos`); $('#hud-veh').textContent = 'Vehículo 1 · carro real';
+      p = pasoLista('Preparar la DEMO del simulador', 'POST /demos');
+      const previas = (await api('GET', '/vehiculos/1/demos')).filter(x => x.nombre === 'DEMO del simulador');
+      for (const x of previas) await api('POST', `/vehiculos/1/demos/${x.id_demo}/eliminar`);
+      d = await api('POST', '/vehiculos/1/demos', { nombre: 'DEMO del simulador', descripcion: `${pasos.length} movimientos armados en el simulador 3D` });
+    } else {
+      p = pasoLista('Crear vehículo', 'POST /vehiculos');
+      const v = await api('POST', '/vehiculos', { nombre: `${($('#nombre').value.trim() || 'Excavadora simulada').slice(0, 60)} ${new Date().toLocaleTimeString('es-MX', { hour12: false })}`, modelo: '970 TOP', descripcion: 'Excavadora creada por el simulador 3D', microcontrolador: 'ESP32' });
+      idV = idDe(v, 'id_vehiculo'); p.ok(`id ${idV}`); $('#hud-veh').textContent = `Vehículo ${idV} · simulado`;
+      p = pasoLista(`Registrar ${necesarios.length} comandos`, 'POST /comandos');
+      for (const [nombre, codigo, descripcion] of CATALOGO.filter(c => necesarios.includes(c[0]))) {
+        const c = await api('POST', `/vehiculos/${idV}/comandos`, { nombre, codigo, descripcion });
+        ids[nombre] = idDe(c, 'id_comando');
       }
-      p.ok();
-
-      p = paso('Consultar historial antes', 'GET /historial');
-      // Se compara el registro más reciente: si la DEMO no escribe historial, sigue siendo el mismo
-      const ultimo = h => (h.movimientos || [])[0]?.id_historial ?? null;
-      const antes = await api('GET', `/vehiculos/${idV}/historial`);
-      const totalAntes = antes.total_devueltos ?? 0, topAntes = ultimo(antes);
-      p.ok(`${totalAntes} registros${topAntes ? ` · más reciente #${topAntes}` : ''}`);
-
-      p = paso('Abrir WebSocket', `WS /ws/vehiculos/${idV}`);
-      await conectarWS(idV); p.ok();
-      setInterval(() => ws && ws.readyState === 1 && ws.send('ping'), 25000);
-
-      p = paso('Iniciar DEMO', `POST /demos/${idD}/iniciar`);
-      const fin = new Promise(r => alTerminar = r);
-      await api('POST', `/vehiculos/${idV}/demos/${idD}/iniciar`); p.ok('202');
-      $('#cancelar').disabled = false;
-
-      p = paso('Recibir eventos por WebSocket', 'demo_inicio … demo_fin');
-      const ev = await fin; ev === 'demo_fin' ? p.ok('completa') : p.err(ev);
-
-      p = paso('Consultar historial después', 'GET /historial');
-      const desp = await api('GET', `/vehiculos/${idV}/historial`);
-      const totalDesp = desp.total_devueltos ?? 0, topDesp = ultimo(desp);
-      topDesp === topAntes && totalDesp === totalAntes
-        ? p.ok(`${totalDesp} registros · sin cambios${topDesp ? ` (sigue #${topDesp})` : ''}`)
-        : p.err(`cambió: #${topAntes} → #${topDesp}`);
-    } catch (err) {
-      paso('Error', '').err(err.message);
-    } finally {
-      $('#go').disabled = false;
+      p.ok(Object.keys(ids).length + ' comandos');
+      p = pasoLista('Crear DEMO', 'POST /demos');
+      d = await api('POST', `/vehiculos/${idV}/demos`, { nombre: `DEMO de ${pasos.length} movimientos`, descripcion: 'Armada en el simulador 3D' });
     }
-  });
+    const idD = idDe(d, 'id_demo'); p.ok(`id ${idD}`);
 
-  $('#cancelar').addEventListener('click', async () => {
-    if (!idV) return;
-    try { await api('POST', `/vehiculos/${idV}/demos/cancelar`); } catch (e) { paso('Cancelar', '').err(e.message); }
-  });
+    p = pasoLista(`Agregar ${pasos.length} movimientos en orden`, 'POST /demos/{id}/movimientos');
+    for (let i = 0; i < pasos.length; i++) await api('POST', `/vehiculos/${idV}/demos/${idD}/movimientos`, { id_comando: ids[pasos[i].cmd], orden: i + 1, duracion_ms: +pasos[i].dur, pausa_ms: +pasos[i].pausa });
+    p.ok();
+
+    const ultimo = h => (h.movimientos || [])[0]?.id_historial ?? null;
+    p = pasoLista('Consultar historial antes', 'GET /historial');
+    const antes = await api('GET', `/vehiculos/${idV}/historial`); const topAntes = ultimo(antes), totAntes = antes.total_devueltos ?? 0;
+    p.ok(`${totAntes} registros${topAntes ? ` · más reciente #${topAntes}` : ''}`);
+
+    p = pasoLista('Abrir WebSocket', `WS /ws/vehiculos/${idV}`); await conectarWS(idV); p.ok();
+
+    p = pasoLista('Iniciar DEMO', `POST /demos/${idD}/iniciar`);
+    const fin = new Promise(r => alTerminar = r);
+    await api('POST', `/vehiculos/${idV}/demos/${idD}/iniciar`); p.ok('202'); $('#cancelar').disabled = false;
+
+    p = pasoLista('Recibir eventos por WebSocket', 'demo_inicio … demo_fin');
+    const ev = await fin; ev === 'demo_fin' ? p.ok('completa') : p.err(ev);
+
+    p = pasoLista('Consultar historial después', 'GET /historial');
+    const desp = await api('GET', `/vehiculos/${idV}/historial`); const topDesp = ultimo(desp), totDesp = desp.total_devueltos ?? 0;
+    topDesp === topAntes && totDesp === totAntes ? p.ok(`sin cambios${topDesp ? ` (sigue #${topDesp})` : ''}`) : p.err(`cambió: #${topAntes} → #${topDesp}`);
+  } catch (err) {
+    pasoLista('Error', '').err(err.message);
+  } finally { $('#go').disabled = !pasos.length; }
+});
+$('#cancelar').addEventListener('click', async () => { if (!idV) return; try { await api('POST', `/vehiculos/${idV}/demos/cancelar`); } catch (e) { pasoLista('Cancelar', '').err(e.message); } });
 })();
 </script>
 </body>
