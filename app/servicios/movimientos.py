@@ -36,15 +36,22 @@ class ServicioMovimientos:
         self.vehiculos = vehiculos
         self.comandos = comandos
 
-    def ejecutar(self, id_vehiculo: int, id_comando: int, origen: str) -> dict:
-        """Valida y guarda un movimiento individual: estado + historial en UNA transacción.
-        Si algo falla se hace rollback y no cambia nada."""
-        self.vehiculos.obtener_activo(id_vehiculo)
-        comando = self.comandos.obtener_activo(id_vehiculo, id_comando)
-        # Recibir un HTTP no prueba que el vehículo esté conectado: se conserva el valor actual
-        actual = self.repo.obtener_estado(id_vehiculo)
-        conectado = bool(actual["conectado"]) if actual else False
+    def validar(self, id_vehiculo: int, id_comando: int) -> dict:
+        """Vehículo activo y comando activo de ese vehículo (desde el catálogo en memoria)."""
+        self.vehiculos.obtener_activo_rapido(id_vehiculo)
+        return self.comandos.obtener_activo_rapido(id_vehiculo, id_comando)
+
+    def registrar(self, id_vehiculo: int, id_comando: int, origen: str) -> None:
+        """Estado + historial en UNA transacción y una sola conexión. Si algo falla, rollback."""
         with self.repo.db.transaccion() as s:
+            # Recibir un HTTP no prueba que el vehículo esté conectado: se conserva el valor actual
+            actual = self.repo.obtener_estado(id_vehiculo, s=s)
+            conectado = bool(actual["conectado"]) if actual else False
             self.repo.actualizar_estado(id_vehiculo, id_comando, conectado, s=s)
             self.repo.registrar_historial(id_vehiculo, id_comando, origen, s=s)
+
+    def ejecutar(self, id_vehiculo: int, id_comando: int, origen: str) -> dict:
+        """Valida y guarda un movimiento individual y devuelve el estado resultante."""
+        comando = self.validar(id_vehiculo, id_comando)
+        self.registrar(id_vehiculo, id_comando, origen)
         return {"comando": comando, "estado": self.repo.obtener_estado(id_vehiculo)}

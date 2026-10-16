@@ -29,14 +29,23 @@ def obtener_estado(id_vehiculo: int = IdV):
                           "**SP:** `sp_obtener_vehiculo`, `sp_obtener_comandos_vehiculo`, `sp_obtener_estado`, "
                           "`sp_actualizar_estado`, `sp_registrar_historial`"))
 async def ejecutar_movimiento(datos: e.MovimientoIndividual, id_vehiculo: int = IdV):
-    r = await asyncio.to_thread(app_ctx.movimientos.ejecutar, id_vehiculo, datos.id_comando, datos.origen)
-    c = r["comando"]
-    notificados = await app_ctx.ws.publicar(id_vehiculo, app_ctx.ws.evento(
-        "movimiento", id_vehiculo, id_comando=c["id_comando"], comando=c["nombre"], codigo=c["codigo"],
-        origen=datos.origen, modo=datos.modo))
+    c, notificados = await mover_y_notificar(id_vehiculo, datos.id_comando, datos.origen, datos.modo)
+    estado_nuevo = await asyncio.to_thread(app_ctx.repo.obtener_estado, id_vehiculo)
     return {"mensaje": "Movimiento registrado", "id_vehiculo": id_vehiculo, "id_comando": c["id_comando"],
             "comando": c["nombre"], "codigo": c["codigo"], "origen": datos.origen,
-            "estado": r["estado"], "clientes_notificados": notificados}
+            "estado": estado_nuevo, "clientes_notificados": notificados}
+
+
+async def mover_y_notificar(id_vehiculo: int, id_comando: int, origen: str, modo: str) -> tuple[dict, int]:
+    """Valida (catálogo en memoria), guarda estado + historial en una transacción y, en cuanto
+    hace commit, avisa por WebSocket. La lectura del estado para la respuesta va después, para
+    que la orden le llegue al vehículo lo antes posible. Lo usan el POST y el WebSocket del control."""
+    c = await asyncio.to_thread(app_ctx.movimientos.validar, id_vehiculo, id_comando)
+    await asyncio.to_thread(app_ctx.movimientos.registrar, id_vehiculo, id_comando, origen)
+    notificados = await app_ctx.ws.publicar(id_vehiculo, app_ctx.ws.evento(
+        "movimiento", id_vehiculo, id_comando=c["id_comando"], comando=c["nombre"], codigo=c["codigo"],
+        origen=origen, modo=modo))
+    return c, notificados
 
 
 @estado.post("/mantener", response_model=e.Mensaje, responses={**AUT},

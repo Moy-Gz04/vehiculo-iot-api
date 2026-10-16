@@ -47,8 +47,8 @@ class RepositorioSP:
         args = ("sp_actualizar_estado", id_vehiculo, id_comando, conectado)
         s.llamar(*args) if s else self.db.llamar(*args)
 
-    def obtener_estado(self, id_vehiculo: int) -> Optional[dict]:
-        filas = self.db.llamar("sp_obtener_estado", id_vehiculo)
+    def obtener_estado(self, id_vehiculo: int, s: Optional[Sesion] = None) -> Optional[dict]:
+        filas = s.llamar("sp_obtener_estado", id_vehiculo) if s else self.db.llamar("sp_obtener_estado", id_vehiculo)
         return filas[0] if filas else None
 
     # ---------- Historial ----------

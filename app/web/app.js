@@ -112,6 +112,16 @@
   // ---------- Envío de órdenes ----------
   async function enviar(nombre, modo) {
     const c = st.comandos.get(nombre); if (!c) return null;
+    // Por el WebSocket ya abierto: sin el costo de una petición HTTPS, la orden llega antes al vehículo.
+    // Resuelve cuando vuelve el evento "movimiento" (o a los 3 s), para que el "soltar" del gamepad vaya después.
+    if (st.ws && st.ws.readyState === 1) {
+      st.ws.send(JSON.stringify({ accion: 'mover', clave: clave(), id_comando: c.id_comando, origen: origen(), modo }));
+      return new Promise(ok => {
+        const fin = (m) => { clearTimeout(t); st.esperas = st.esperas.filter(f => f !== fin); ok(m); };
+        const t = setTimeout(() => fin(null), 3000);
+        (st.esperas ||= []).push(fin);
+      });
+    }
     try {
       const r = await post(`/vehiculos/${st.idV}/movimientos`, { id_comando: c.id_comando, origen: origen(), modo });
       pintarEstado(r.estado);
@@ -223,12 +233,13 @@
       registrarEvento(m);
       switch (m.evento) {
         case 'estado_actual': pintarEstado(m); if (!m.demo_en_curso) demoTermina(false); break;
-        case 'movimiento': pintarEstado(m); $('#lcd-info').textContent = (m.origen || '').slice(0, 14); if (!$('#hoja').hidden) cargarHistorial(); break;
+        case 'movimiento': pintarEstado(m); $('#lcd-info').textContent = (m.origen || '').slice(0, 14); if (!$('#hoja').hidden) cargarHistorial();
+          (st.esperas || []).slice().forEach(f => f(m)); break;
         case 'demo_inicio': demoEnMarcha(m); aviso(`DEMO "${m.demo}" en marcha`); break;
         case 'demo_movimiento': pintarEstado(m); demoPaso(m); break;
         case 'demo_fin': demoTermina(true); aviso('DEMO terminada'); break;
         case 'demo_cancelada': demoTermina(true); aviso('DEMO cancelada', true); break;
-        case 'demo_error': case 'error': demoTermina(true); aviso(m.detalle || 'Error', true); break;
+        case 'demo_error': case 'error': demoTermina(true); aviso(m.detalle || 'Error', true); (st.esperas || []).slice().forEach(f => f(null)); break;
         case 'soltar': $$('#remoto .activa').forEach(b => b.classList.remove('activa')); break;
       }
     };

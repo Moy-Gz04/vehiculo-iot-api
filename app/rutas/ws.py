@@ -7,6 +7,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from app.config import configuracion
 from app.dependencias import app_ctx
 from app.errores import ErrorNegocio
+from app.rutas.estado import mover_y_notificar
 
 ws_router = APIRouter()
 
@@ -41,8 +42,24 @@ async def monitorear(ws: WebSocket, id_vehiculo: int):
                 msg = json.loads(texto)
             except ValueError:
                 continue
-            if isinstance(msg, dict) and msg.get("accion") in ("mantener", "soltar") and msg.get("clave") == configuracion.api_key:
+            if not isinstance(msg, dict) or msg.get("clave") != configuracion.api_key:
+                continue
+            if msg.get("accion") in ("mantener", "soltar"):
                 await gestor.publicar(id_vehiculo, gestor.evento(msg["accion"], id_vehiculo))
+            elif msg.get("accion") == "mover":
+                # Movimiento por la conexión ya abierta (sin el costo de una petición HTTP):
+                # mismas validaciones y la misma transacción que POST /movimientos.
+                try:
+                    id_comando = int(msg.get("id_comando"))
+                    origen = str(msg.get("origen") or "WEB-CONTROL")[:30]
+                    modo = msg.get("modo") if msg.get("modo") in ("toque", "continuo", "mantener") else "toque"
+                    await mover_y_notificar(id_vehiculo, id_comando, origen, modo)
+                except ErrorNegocio as e:
+                    await ws.send_json(gestor.evento("error", id_vehiculo, detalle=e.mensaje))
+                except (TypeError, ValueError):
+                    await ws.send_json(gestor.evento("error", id_vehiculo, detalle="id_comando no válido"))
+                except Exception:
+                    await ws.send_json(gestor.evento("error", id_vehiculo, detalle="No se pudo guardar el movimiento en RDS"))
     except WebSocketDisconnect:
         pass
     except Exception:
