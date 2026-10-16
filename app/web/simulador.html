@@ -117,12 +117,14 @@
         <button type="button" class="chico" data-figura="octagono">Octágono</button>
         <button type="button" class="chico" data-figura="estrella">Estrella</button>
         <button type="button" class="chico" data-figura="circulo">Círculo</button>
+        <button type="button" class="chico" data-figura="corazon">Corazón</button>
+        <button type="button" class="chico" data-figura="denny">DENNY + corazón</button>
       </div>
       <div class="fila2" style="margin-bottom:8px">
         <div><label class="t" for="lado-ms">Lado: ms de avance</label><input id="lado-ms" type="number" min="100" max="20000" step="10" value="1200"></div>
         <div><label class="t" for="giro90">ms para girar 90°</label><input id="giro90" type="number" min="100" max="20000" step="10" value="1310" title="Ajústalo hasta que en el carro real la figura cierre"></div>
       </div>
-      <div class="fila2" style="margin-bottom:8px;align-items:end"><div><label class="t" for="cantidad">Cantidad de movimientos</label><input id="cantidad" type="number" min="1" max="40" value="8"></div><div><label class="t" for="dur-def">Duración por defecto (ms)</label><input id="dur-def" type="number" min="100" max="60000" step="10" value="1000"></div></div>
+      <div class="fila2" style="margin-bottom:8px;align-items:end"><div><label class="t" for="cantidad">Cantidad de movimientos</label><input id="cantidad" type="number" min="1" max="200" value="8"></div><div><label class="t" for="dur-def">Duración por defecto (ms)</label><input id="dur-def" type="number" min="100" max="60000" step="10" value="1000"></div></div>
       <div class="pasos-demo" id="pasos-demo"></div>
       <button type="button" class="sec" id="agregar">+ Agregar movimiento</button>
       <div class="totales"><span id="total-tiempo">0.0 s</span><span>duración · pausa en ms</span></div>
@@ -145,6 +147,8 @@
         <div class="controles3d">
           <button type="button" class="chico" id="cam-seguir">Seguir: sí</button>
           <button type="button" class="chico" id="cam-reset">Vista inicial</button>
+          <button type="button" class="chico" id="cam-aerea">Vista aérea</button>
+          <button type="button" class="chico" id="ver-numeros">Números: sí</button>
           <button type="button" class="chico" id="borrar-rastro">Borrar recorrido</button>
         </div>
       </div>
@@ -190,10 +194,10 @@ renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadow
 renderer.outputEncoding = THREE.sRGBEncoding; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.9;
 cont.prepend(renderer.domElement);
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0B1020); scene.fog = new THREE.Fog(0x0B1020, 26, 60);
+scene.background = new THREE.Color(0x0B1020); scene.fog = new THREE.Fog(0x0B1020, 60, 140);
 const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 200);
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true; controls.dampingFactor = 0.08; controls.maxPolarAngle = Math.PI * 0.48; controls.minDistance = 4; controls.maxDistance = 40;
+controls.enableDamping = true; controls.dampingFactor = 0.08; controls.maxPolarAngle = Math.PI * 0.48; controls.minDistance = 4; controls.maxDistance = 90;
 const VISTA = () => { camera.position.set(8, 6.5, 9); controls.target.set(0, 0.8, 0); };
 VISTA();
 
@@ -339,7 +343,7 @@ puntoRastro();
 const VEL = { avance: 1.4, giro: 1.2, torreta: 1.3, art: 0.9 };
 const giroCal = () => (Math.PI / 2) / (Math.max(100, +document.getElementById('giro90').value || 1310) / 1000);   // rad/s según «ms para girar 90°»       // unidades/s y rad/s
 let accion = null;   // { cmd, fin }
-function animarComando(cmd, ms) { const t = performance.now(); if (accion) avanzarHasta(t); accion = { cmd, inicio: t, fin: t + ms, ult: t }; $('#hud-cmd').textContent = bonito(cmd); }
+function animarComando(cmd, ms) { vehiculo.visible = true; const t = performance.now(); if (accion) avanzarHasta(t); accion = { cmd, inicio: t, fin: t + ms, ult: t }; $('#hud-cmd').textContent = bonito(cmd); }
 const clamp = (v, [a, b]) => Math.min(b, Math.max(a, v));
 // El movimiento depende del tiempo real, no de los cuadros dibujados: aunque el navegador
 // vaya lento, cada paso recorre exactamente su duración (se integra en sub-pasos de 1/60 s).
@@ -382,8 +386,18 @@ function cuadro(t) {
 }
 requestAnimationFrame(cuadro);
 $('#cam-seguir').onclick = () => { seguir = !seguir; $('#cam-seguir').textContent = 'Seguir: ' + (seguir ? 'sí' : 'no'); };
-$('#cam-reset').onclick = () => { camera.position.set(fis.x + 8, 6.5, fis.z + 9); controls.target.set(fis.x, 0.8, fis.z); };
+$('#cam-reset').onclick = () => { vehiculo.visible = true; camera.position.set(fis.x + 8, 6.5, fis.z + 9); controls.target.set(fis.x, 0.8, fis.z); };
 $('#borrar-rastro').onclick = borrarRastro;
+// Vista aérea: cámara arriba del recorrido completo (para leer letras y figuras)
+$('#cam-aerea').onclick = () => {
+  const xs = pts.map(p => p[0]).concat(fis.x), zs = pts.map(p => p[1]).concat(fis.z);
+  const cx = (Math.min(...xs) + Math.max(...xs)) / 2, cz = (Math.min(...zs) + Math.max(...zs)) / 2;
+  const tam = Math.max(4, Math.max(...xs) - Math.min(...xs), (Math.max(...zs) - Math.min(...zs)) * camera.aspect);
+  seguir = false; $('#cam-seguir').textContent = 'Seguir: no';
+  controls.target.set(cx, 0, cz); camera.position.set(cx, tam * 1.15 + 3, cz + 0.01);
+  vehiculo.visible = false;   // que la excavadora no tape el dibujo
+};
+$('#ver-numeros').onclick = () => { marcas.visible = !marcas.visible; $('#ver-numeros').textContent = 'Números: ' + (marcas.visible ? 'sí' : 'no'); };
 
 /* ================= Constructor de DEMO ================= */
 let pasos = [];
@@ -419,11 +433,42 @@ $('#pasos-demo').addEventListener('click', e => {
 });
 // Cantidad: agrega o quita movimientos al final hasta llegar al número elegido
 $('#cantidad').addEventListener('change', () => {
-  const n = Math.max(1, Math.min(40, Math.round(+$('#cantidad').value || 1)));
+  const n = Math.max(1, Math.min(200, Math.round(+$('#cantidad').value || 1)));
   const dur = Math.max(100, +$('#dur-def').value || 1000), ciclo = ['AVANZAR', 'GIRAR_DERECHA'];
   while (pasos.length < n) pasos.push({ cmd: ciclo[pasos.length % 2], dur, pausa: 250 });
   pasos.length = n; $('#cantidad').value = n; pintarPasos();
 });
+/* Trazador: convierte una lista de puntos (u = derecha, v = arriba) en giros y avances.
+   El carro empieza mirando hacia arriba (+v). Si el siguiente tramo va justo en sentido contrario
+   usa RETROCEDER en lugar de dar media vuelta. Unidad = mitad de «Lado: ms de avance». */
+function trazar(puntos) {
+  const g90 = Math.max(100, +$('#giro90').value || 1310), unidad = Math.max(50, (+$('#lado-ms').value || 1200) / 2);
+  const r10 = v => Math.round(v / 10) * 10, out = [];
+  let rumbo = 0;                                    // 0 = arriba; positivo = a la izquierda
+  const norm = a => { while (a > Math.PI) a -= 2 * Math.PI; while (a < -Math.PI) a += 2 * Math.PI; return a; };
+  for (let i = 1; i < puntos.length; i++) {
+    const [u0, v0] = puntos[i - 1], [u1, v1] = puntos[i];
+    const du = u1 - u0, dv = v1 - v0, largo = Math.hypot(du, dv); if (largo < 1e-6) continue;
+    const objetivo = Math.atan2(-du, dv), delta = norm(objetivo - rumbo);
+    const ms = r10(largo * unidad);
+    if (Math.abs(Math.abs(delta) - Math.PI) < 0.02) { out.push({ cmd: 'RETROCEDER', dur: ms, pausa: 150 }); continue; }
+    if (Math.abs(delta) > 0.017) { out.push({ cmd: delta > 0 ? 'GIRAR_IZQUIERDA' : 'GIRAR_DERECHA', dur: r10(Math.abs(delta) * 180 / Math.PI / 90 * g90), pausa: 150 }); rumbo = objetivo; }
+    const ult = out.at(-1);
+    if (ult && ult.cmd === 'AVANZAR' && Math.abs(delta) <= 0.017) ult.dur += ms; else out.push({ cmd: 'AVANZAR', dur: ms, pausa: 150 });
+  }
+  out.push({ cmd: 'DETENER', dur: 400, pausa: 0 });
+  return out;
+}
+const CORAZON = x => [[x + 2, 0], [x, 2.2], [x, 3.3], [x + 0.5, 4], [x + 1.4, 4], [x + 2, 3.2], [x + 2.6, 4], [x + 3.5, 4], [x + 4, 3.3], [x + 4, 2.2], [x + 2, 0]];
+const DENNY = [
+  [0, 0], [0, 4], [1.5, 4], [2, 3], [2, 1], [1.5, 0], [0, 0],                  // D
+  [5, 0], [3, 0], [3, 2], [4.5, 2], [3, 2], [3, 4], [5, 4],                   // E
+  [6, 4], [6, 0], [6, 4], [8, 0], [8, 4],                                      // N
+  [9, 4], [9, 0], [9, 4], [11, 0], [11, 4],                                    // N
+  [12, 4], [13, 2], [14, 4], [13, 2], [13, 0],                                 // Y
+  [17, 0], ...CORAZON(15).slice(1),                                            // corazón
+];
+
 // Figuras: lados de avance y giros calculados con «ms para girar 90°» (giro exterior = 360°/lados)
 function figura(tipo) {
   const lado = Math.max(100, +$('#lado-ms').value || 1200), g90 = Math.max(100, +$('#giro90').value || 1310);
@@ -436,12 +481,14 @@ function figura(tipo) {
   if (tipo === 'hexagono') poligono(6);
   if (tipo === 'octagono') poligono(8, Array(8).fill(Math.round(lado * 0.6 / 10) * 10));
   if (tipo === 'estrella') for (let i = 0; i < 5; i++) out.push({ cmd: 'AVANZAR', dur: lado * 2, pausa: P }, { cmd: 'GIRAR_DERECHA', dur: giro(144), pausa: P });
+  if (tipo === 'corazon') return trazar(CORAZON(0));
+  if (tipo === 'denny') return trazar(DENNY);
   if (tipo === 'circulo') for (let i = 0; i < 12; i++) out.push({ cmd: 'AVANZAR', dur: Math.round(lado * 0.4 / 10) * 10, pausa: 0 }, { cmd: 'GIRAR_DERECHA', dur: giro(30), pausa: 0 });
   out.push({ cmd: 'DETENER', dur: 400, pausa: 0 });
   return out;
 }
 document.querySelectorAll('[data-figura]').forEach(b => b.onclick = () => { pasos = figura(b.dataset.figura); pintarPasos(); });
-$('#agregar').onclick = () => { if (pasos.length >= 40) return; const ult = pasos.at(-1); pasos.push({ cmd: ult && ult.cmd === 'AVANZAR' ? 'GIRAR_DERECHA' : 'AVANZAR', dur: 1000, pausa: 250 }); pintarPasos(); $('#pasos-demo').scrollTop = 1e6; };
+$('#agregar').onclick = () => { if (pasos.length >= 200) return; const ult = pasos.at(-1); pasos.push({ cmd: ult && ult.cmd === 'AVANZAR' ? 'GIRAR_DERECHA' : 'AVANZAR', dur: 1000, pausa: 250 }); pintarPasos(); $('#pasos-demo').scrollTop = 1e6; };
 document.querySelectorAll('[data-plantilla]').forEach(b => b.onclick = () => { pasos = PLANTILLAS[b.dataset.plantilla]().map(([cmd, dur, pausa]) => ({ cmd, dur, pausa })); pintarPasos(); });
 pasos = PLANTILLAS.excavar().map(([cmd, dur, pausa]) => ({ cmd, dur, pausa })); pintarPasos();
 const marcarPaso = (i, clase) => { document.querySelectorAll('.paso').forEach((el, k) => { el.classList.toggle('activo', k === i && clase === 'activo'); if (k < i) el.classList.add('hecho'); }); };
