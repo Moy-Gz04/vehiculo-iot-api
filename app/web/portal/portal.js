@@ -335,7 +335,7 @@ function marcarNav(ruta) {
   $('#lado').classList.remove('abierto');
 }
 function pintarPuntos() {
-  for (const c of C) { const p = $(`[data-punto="${c.id}"]`); if (p) p.className = 'punto ' + (resultados[c.id] || ''); }
+  for (const c of C) $$(`[data-punto="${c.id}"]`).forEach(p => p.className = 'punto ' + (resultados[c.id] || ''));
   const ganados = C.filter(c => resultados[c.id] === 'ok').reduce((a, c) => a + c.pts, 0);
   const ring = $('#anillo-valor'); if (ring) { ring.style.strokeDashoffset = 314 * (1 - ganados / 100); $('#anillo-cifra').textContent = ganados; }
   $$('[data-criterio-estado]').forEach(el => { const r = resultados[el.dataset.criterioEstado]; el.className = 'chip ' + ({ ok: 'ok', mal: 'mal', av: 'av' }[r] || ''); el.textContent = { ok: 'Verificado', mal: 'Falla', av: 'Parcial' }[r] || 'Pendiente'; });
