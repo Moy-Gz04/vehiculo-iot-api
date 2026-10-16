@@ -107,6 +107,7 @@
         <button type="button" class="chico" data-plantilla="azar">Al azar</button>
         <button type="button" class="chico" data-plantilla="vaciar">Vaciar</button>
       </div>
+      <div class="fila2" style="margin-bottom:8px;align-items:end"><div><label class="t" for="cantidad">Cantidad de movimientos</label><input id="cantidad" type="number" min="1" max="40" value="8"></div><div><label class="t" for="dur-def">Duración por defecto (ms)</label><input id="dur-def" type="number" min="100" max="60000" step="100" value="1000"></div></div>
       <div class="pasos-demo" id="pasos-demo"></div>
       <button type="button" class="sec" id="agregar">+ Agregar movimiento</button>
       <div class="totales"><span id="total-tiempo">0.0 s</span><span>duración · pausa en ms</span></div>
@@ -387,6 +388,7 @@ function pintarPasos() {
     <span class="acc"><button type="button" data-a="sube" title="Subir" ${i === 0 ? 'disabled' : ''}>↑</button><button type="button" data-a="baja" title="Bajar" ${i === pasos.length - 1 ? 'disabled' : ''}>↓</button><button type="button" data-a="quita" title="Quitar">×</button></span>
   </div>`).join('') || '<div class="nota">Agrega movimientos o elige una plantilla.</div>';
   const total = pasos.reduce((a, p) => a + (+p.dur || 0) + (+p.pausa || 0), 0);
+  if (document.activeElement !== $('#cantidad')) $('#cantidad').value = pasos.length;
   $('#n-pasos').textContent = `${pasos.length} ${pasos.length === 1 ? 'movimiento' : 'movimientos'}`;
   $('#total-tiempo').textContent = `${(total / 1000).toFixed(1)} s en total`;
   $('#go').disabled = !pasos.length;
@@ -398,6 +400,13 @@ $('#pasos-demo').addEventListener('click', e => {
   if (b.dataset.a === 'sube' && i > 0) [pasos[i - 1], pasos[i]] = [pasos[i], pasos[i - 1]];
   if (b.dataset.a === 'baja' && i < pasos.length - 1) [pasos[i + 1], pasos[i]] = [pasos[i], pasos[i + 1]];
   pintarPasos();
+});
+// Cantidad: agrega o quita movimientos al final hasta llegar al número elegido
+$('#cantidad').addEventListener('change', () => {
+  const n = Math.max(1, Math.min(40, Math.round(+$('#cantidad').value || 1)));
+  const dur = Math.max(100, +$('#dur-def').value || 1000), ciclo = ['AVANZAR', 'GIRAR_DERECHA'];
+  while (pasos.length < n) pasos.push({ cmd: ciclo[pasos.length % 2], dur, pausa: 250 });
+  pasos.length = n; $('#cantidad').value = n; pintarPasos();
 });
 $('#agregar').onclick = () => { if (pasos.length >= 40) return; const ult = pasos.at(-1); pasos.push({ cmd: ult && ult.cmd === 'AVANZAR' ? 'GIRAR_DERECHA' : 'AVANZAR', dur: 1000, pausa: 250 }); pintarPasos(); $('#pasos-demo').scrollTop = 1e6; };
 document.querySelectorAll('[data-plantilla]').forEach(b => b.onclick = () => { pasos = PLANTILLAS[b.dataset.plantilla]().map(([cmd, dur, pausa]) => ({ cmd, dur, pausa })); pintarPasos(); });
