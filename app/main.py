@@ -44,6 +44,16 @@ app.mount("/portal", StaticFiles(directory=Path(__file__).parent / "web" / "port
 app.mount("/control", StaticFiles(directory=Path(__file__).parent / "web", html=True), name="control")
 
 
+@app.middleware("http")
+async def sin_cache_web(request: Request, call_next):
+    """El portal, el control y el simulador se revisan en cada visita: así una versión nueva
+    aparece al recargar, sin que el navegador siga mostrando la copia que guardó."""
+    respuesta = await call_next(request)
+    if request.url.path.startswith(("/control", "/portal")) and not request.url.path.startswith("/portal/api"):
+        respuesta.headers["Cache-Control"] = "no-cache"
+    return respuesta
+
+
 @app.get("/control", include_in_schema=False)
 def control():
     return RedirectResponse("/control/")
