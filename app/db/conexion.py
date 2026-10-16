@@ -1,4 +1,5 @@
 """Conexión a MySQL (Amazon RDS) y ejecución segura de Stored Procedures."""
+import queue
 import time
 from collections import Counter
 from contextlib import contextmanager
@@ -30,10 +31,43 @@ uso_sp = UsoProcedimientos()
 
 
 class BaseDatos:
-    """Abre conexiones a RDS y ejecuta procedimientos con parámetros enlazados."""
+    """Abre conexiones a RDS y ejecuta procedimientos con parámetros enlazados.
+
+    Mantiene un pequeño pool de conexiones abiertas: abrir una conexión nueva a RDS
+    (TCP + autenticación) cuesta mucho más que la consulta, y un movimiento hace
+    varias consultas seguidas. Reutilizarlas baja la latencia de cada orden.
+    """
+
+    MAX_LIBRES = 6
 
     def __init__(self, cfg: Configuracion) -> None:
         self._cfg = cfg
+        self._libres: queue.LifoQueue = queue.LifoQueue()
+
+    def _tomar(self) -> pymysql.connections.Connection:
+        """Una conexión del pool si hay una sana; si no, una nueva."""
+        while True:
+            try:
+                con = self._libres.get_nowait()
+            except queue.Empty:
+                return self._conectar()
+            try:
+                con.ping(reconnect=False)  # descarta las que RDS ya cerró por inactividad
+                return con
+            except Exception:
+                try:
+                    con.close()
+                except Exception:
+                    pass
+
+    def _devolver(self, con: pymysql.connections.Connection, sana: bool = True) -> None:
+        if sana and con.open and self._libres.qsize() < self.MAX_LIBRES:
+            self._libres.put(con)
+            return
+        try:
+            con.close()
+        except Exception:
+            pass
 
     def _conectar(self) -> pymysql.connections.Connection:
         try:
@@ -49,15 +83,19 @@ class BaseDatos:
     @contextmanager
     def transaccion(self) -> Iterator["Sesion"]:
         """Varias llamadas a SP en una sola transacción: commit al final o rollback si algo falla."""
-        con = self._conectar()
+        con = self._tomar()
+        sana = True
         try:
             yield Sesion(con)
             con.commit()
         except Exception:
-            con.rollback()
+            try:
+                con.rollback()
+            except Exception:
+                sana = False
             raise
         finally:
-            con.close()
+            self._devolver(con, sana)
 
     def llamar(self, sp: str, *args: Any) -> list[dict]:
         """Ejecuta un único SP en su propia transacción."""
@@ -66,13 +104,19 @@ class BaseDatos:
 
     def consulta(self, sql: str, *args: Any) -> list[dict]:
         """Consulta de solo lectura para el diagnóstico del portal (metadatos, nunca datos de negocio)."""
-        con = self._conectar()
+        con = self._tomar()
+        sana = True
         try:
             with con.cursor() as cur:
                 cur.execute(sql, args)
-                return list(cur.fetchall())
+                filas = list(cur.fetchall())
+            con.commit()  # cierra la lectura para que la conexión vuelva limpia al pool
+            return filas
+        except Exception:
+            sana = False
+            raise
         finally:
-            con.close()
+            self._devolver(con, sana)
 
 
 class Sesion:
