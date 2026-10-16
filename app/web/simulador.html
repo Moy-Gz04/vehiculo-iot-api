@@ -50,6 +50,12 @@
   .log .e.demo_movimiento{color:var(--ambar)}.log .e.demo_cancelada,.log .e.error,.log .e.demo_error{color:var(--rojo)}
   .log .e.movimiento{color:var(--morado)}
   .nota{font-size:12px;color:var(--suave);margin-top:8px}
+  .real{display:flex;gap:10px;align-items:flex-start;margin-top:14px;padding:10px 12px;border-radius:12px;background:#0A1124;border:1px solid var(--linea);cursor:pointer;text-transform:none;letter-spacing:0;font:400 12.5px/1.45 'IBM Plex Sans',sans-serif;color:var(--suave)}
+  .real input{width:18px;height:18px;margin-top:2px;accent-color:var(--verde);flex:none}
+  .real b{display:block;color:var(--texto);font-size:13px;margin-bottom:2px}
+  .real:has(input:checked){border-color:var(--verde)}
+  .modo{position:absolute;left:12px;bottom:12px;font:600 11px 'IBM Plex Mono';padding:4px 10px;border-radius:99px;background:var(--panel2);color:var(--suave)}
+  .modo.on{color:var(--verde)}
 </style>
 </head>
 <body>
@@ -73,6 +79,8 @@
       <div><label for="patron">Secuencia</label>
         <select id="patron"><option value="cuadro">Recorrido en cuadro</option><option value="zigzag">Zigzag</option><option value="azar">Al azar</option></select></div>
     </div>
+    <label class="real" for="real"><input id="real" type="checkbox" checked>
+      <span><b>Ejecutar también en el carro real</b>La DEMO se arma en el vehículo 1, el que escucha la ESP32: se mueve en pantalla y en el carro al mismo tiempo.</span></label>
     <button type="submit" id="go">Crear y ejecutar DEMO</button>
     <button type="button" class="sec" id="cancelar" disabled>Cancelar DEMO</button>
     <p class="nota">Cada paso llama a la API real (con sus Stored Procedures). Al final consulta el historial para comprobar que la DEMO no lo modificó.</p>
@@ -86,6 +94,7 @@
       <div class="escena" id="escena">
         <div class="hud"><span id="hudVeh">Sin vehículo</span><b id="hudCmd">—</b><span id="hudPaso"></span></div>
         <span class="estado off" id="wsEstado">WebSocket desconectado</span>
+        <span class="modo" id="modo">Solo simulación</span>
         <svg id="carro" viewBox="0 0 64 40" aria-hidden="true">
           <rect x="2" y="6" width="60" height="28" rx="8" fill="#3D7BFF"/>
           <rect x="40" y="10" width="16" height="20" rx="4" fill="#BFD3FF"/>
@@ -182,7 +191,11 @@
           $('#hudPaso').textContent = `Paso ${m.numero} de ${m.total_movimientos} · ${m.duracion_ms} ms + ${m.pausa_ms} ms`;
           $('#barra').style.width = (m.numero / m.total_movimientos * 100) + '%';
         }
-        if (m.evento === 'estado_actual') $('#hudCmd').textContent = m.comando || 'Sin movimientos';
+        if (m.evento === 'estado_actual') {
+          $('#hudCmd').textContent = m.comando || 'Sin movimientos';
+          // En el vehículo 1 también cuenta la ESP32 si está encendida y conectada
+          if (idV === 1) $('#hudPaso').textContent = `Clientes en el vehículo 1: ${m.clientes ?? '—'} (la ESP32 cuenta como uno)`;
+        }
         if (m.evento === 'demo_fin' || m.evento === 'demo_cancelada' || m.evento === 'demo_error') terminar(m.evento);
       };
     });
@@ -198,22 +211,42 @@
     $('#go').disabled = true; pasos.innerHTML = ''; $('#log').innerHTML = ''; $('#barra').style.width = '0';
     pos = { x: 0, y: 0, ang: 0 }; carro.style.transform = '';
     if (ws) ws.close();
+    const real = $('#real').checked;
+    $('#modo').textContent = real ? 'Simulación + carro real (ESP32)' : 'Solo simulación';
+    $('#modo').className = 'modo' + (real ? ' on' : '');
     try {
-      let p = paso('Crear vehículo', 'POST /vehiculos');
-      const v = await api('POST', '/vehiculos', { nombre: `${$('#nombre').value.trim()} ${new Date().toLocaleTimeString('es-MX', { hour12: false })}`,
-        modelo: 'Simulador', descripcion: 'Vehículo creado por el simulador de DEMO', microcontrolador: 'ESP32' });
-      idV = idDe(v, 'id_vehiculo'); p.ok(`id ${idV}`); $('#hudVeh').textContent = `Vehículo ${idV}`;
+      let p, ids = {}, d;
+      if (real) {
+        // El carro real (ESP32) escucha el WebSocket del vehículo 1: la DEMO se arma ahí
+        idV = 1;
+        p = paso('Usar el carro real', 'GET /vehiculos/1/comandos');
+        const cmds = await api('GET', '/vehiculos/1/comandos');
+        for (const c of cmds) if (c.activo !== false) ids[c.nombre] = c.id_comando;
+        const faltan = CATALOGO.map(c => c[0]).filter(nm => !ids[nm]);
+        if (faltan.length) throw new Error(`Al vehículo 1 le faltan los comandos: ${faltan.join(', ')}`);
+        p.ok(`vehículo 1 · ${cmds.length} comandos`); $('#hudVeh').textContent = 'Vehículo 1 · carro real';
 
-      p = paso(`Registrar ${CATALOGO.length} comandos`, 'POST /comandos');
-      const ids = {};
-      for (const [nombre, codigo, descripcion] of CATALOGO) {
-        const c = await api('POST', `/vehiculos/${idV}/comandos`, { nombre, codigo, descripcion });
-        ids[nombre] = idDe(c, 'id_comando');
+        // Se reemplaza siempre la misma DEMO del simulador para no acumularlas
+        p = paso('Preparar la DEMO del simulador', 'POST /demos');
+        const previas = (await api('GET', '/vehiculos/1/demos')).filter(x => x.nombre === 'DEMO del simulador');
+        for (const x of previas) await api('POST', `/vehiculos/1/demos/${x.id_demo}/eliminar`);
+        d = await api('POST', '/vehiculos/1/demos', { nombre: 'DEMO del simulador', descripcion: `${n} movimientos generados por el simulador` });
+      } else {
+        p = paso('Crear vehículo', 'POST /vehiculos');
+        const v = await api('POST', '/vehiculos', { nombre: `${$('#nombre').value.trim()} ${new Date().toLocaleTimeString('es-MX', { hour12: false })}`,
+          modelo: 'Simulador', descripcion: 'Vehículo creado por el simulador de DEMO', microcontrolador: 'ESP32' });
+        idV = idDe(v, 'id_vehiculo'); p.ok(`id ${idV}`); $('#hudVeh').textContent = `Vehículo ${idV}`;
+
+        p = paso(`Registrar ${CATALOGO.length} comandos`, 'POST /comandos');
+        for (const [nombre, codigo, descripcion] of CATALOGO) {
+          const c = await api('POST', `/vehiculos/${idV}/comandos`, { nombre, codigo, descripcion });
+          ids[nombre] = idDe(c, 'id_comando');
+        }
+        p.ok(Object.keys(ids).length + ' comandos');
+
+        p = paso('Crear DEMO', 'POST /demos');
+        d = await api('POST', `/vehiculos/${idV}/demos`, { nombre: `DEMO de ${n} movimientos`, descripcion: 'Generada por el simulador' });
       }
-      p.ok(Object.keys(ids).length + ' comandos');
-
-      p = paso('Crear DEMO', 'POST /demos');
-      const d = await api('POST', `/vehiculos/${idV}/demos`, { nombre: `DEMO de ${n} movimientos`, descripcion: 'Generada por el simulador' });
       const idD = idDe(d, 'id_demo'); p.ok(`id ${idD}`);
 
       p = paso(`Agregar ${n} movimientos`, 'POST /demos/{id}/movimientos');
@@ -226,8 +259,11 @@
       p.ok();
 
       p = paso('Consultar historial antes', 'GET /historial');
+      // Se compara el registro más reciente: si la DEMO no escribe historial, sigue siendo el mismo
+      const ultimo = h => (h.movimientos || [])[0]?.id_historial ?? null;
       const antes = await api('GET', `/vehiculos/${idV}/historial`);
-      const totalAntes = antes.total_devueltos ?? (antes.movimientos || antes).length ?? 0; p.ok(`${totalAntes} registros`);
+      const totalAntes = antes.total_devueltos ?? 0, topAntes = ultimo(antes);
+      p.ok(`${totalAntes} registros${topAntes ? ` · más reciente #${topAntes}` : ''}`);
 
       p = paso('Abrir WebSocket', `WS /ws/vehiculos/${idV}`);
       await conectarWS(idV); p.ok();
@@ -243,8 +279,10 @@
 
       p = paso('Consultar historial después', 'GET /historial');
       const desp = await api('GET', `/vehiculos/${idV}/historial`);
-      const totalDesp = desp.total_devueltos ?? (desp.movimientos || desp).length ?? 0;
-      totalDesp === totalAntes ? p.ok(`${totalDesp} registros · sin cambios`) : p.err(`pasó de ${totalAntes} a ${totalDesp}`);
+      const totalDesp = desp.total_devueltos ?? 0, topDesp = ultimo(desp);
+      topDesp === topAntes && totalDesp === totalAntes
+        ? p.ok(`${totalDesp} registros · sin cambios${topDesp ? ` (sigue #${topDesp})` : ''}`)
+        : p.err(`cambió: #${topAntes} → #${topDesp}`);
     } catch (err) {
       paso('Error', '').err(err.message);
     } finally {
