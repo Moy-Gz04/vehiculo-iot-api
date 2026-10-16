@@ -10,10 +10,10 @@ monitoreo y DEMO por **WebSocket seguro (WSS)**, y documentación en **Swagger U
 
 | Servicio | URL |
 |---|---|
-| Swagger UI (HTTPS) | `https://<dominio>/docs` |
-| WebSocket (WSS) | `wss://<dominio>/ws/vehiculos/{id_vehiculo}` |
-| Simulador de DEMO | `https://<dominio>/control/simulador.html` |
-| Control remoto | `https://<dominio>/control/` |
+| Swagger UI (HTTPS) | `https://13-218-5-111.sslip.io/docs` |
+| WebSocket (WSS) | `wss://13-218-5-111.sslip.io/ws/vehiculos/{id_vehiculo}` |
+| Simulador de DEMO | `https://13-218-5-111.sslip.io/control/simulador.html` |
+| Control remoto | `https://13-218-5-111.sslip.io/control/` |
 
 ## Simulador de DEMO
 
@@ -111,7 +111,7 @@ Códigos usados: 200, 201, 202, 400, 401, 403, 404, 409, 422, 500 y 503.
 ## WebSocket
 
 ```
-wss://<dominio>/ws/vehiculos/{id_vehiculo}      # público (EC2, detrás de HTTPS)
+wss://13-218-5-111.sslip.io/ws/vehiculos/{id_vehiculo}      # público (EC2, detrás de HTTPS)
 ws://localhost:8000/ws/vehiculos/{id_vehiculo}  # local
 ```
 
@@ -155,4 +155,4 @@ Un mensaje enviado no significa que el vehículo físico lo ejecutó: la confirm
 4. HTTPS/WSS: Caddy funciona como proxy inverso en los puertos 80/443, obtiene el certificado de Let's Encrypt
    y reenvía todo a `localhost:8000` (incluido el WebSocket). El dominio se forma con la IP elástica en
    `sslip.io` (por ejemplo `13-218-5-111.sslip.io`). En el Security Group del EC2 se abren **TCP 80 y 443**.
-5. Prueba desde fuera: `https://<dominio>/docs`, `https://<dominio>/control/simulador.html` y `wss://<dominio>/ws/vehiculos/1`.
+5. Prueba desde fuera: `https://13-218-5-111.sslip.io/docs`, `https://13-218-5-111.sslip.io/control/simulador.html` y `wss://13-218-5-111.sslip.io/ws/vehiculos/1`.
