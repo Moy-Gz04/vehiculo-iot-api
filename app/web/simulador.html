@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulador DEMO · Vehículo IoT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root{--fondo:#0B1020;--panel:#121A30;--panel2:#18223D;--linea:#26335A;--texto:#E6ECFF;--suave:#8D9AC4;
+        --azul:#3D7BFF;--verde:#2FD38A;--ambar:#FFB547;--rojo:#FF5D73;--morado:#A57BFF}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fondo);color:var(--texto);font:400 14px/1.5 'IBM Plex Sans',system-ui,sans-serif;padding:20px 16px}
+  h1{font:700 26px 'Chakra Petch',sans-serif;margin:0;letter-spacing:.02em}
+  .sub{color:var(--suave);margin:4px 0 18px}
+  .grid{display:grid;grid-template-columns:340px 1fr;gap:16px;max-width:1280px;margin:0 auto}
+  @media (max-width:900px){.grid{grid-template-columns:1fr}}
+  .panel{background:var(--panel);border:1px solid var(--linea);border-radius:16px;padding:16px}
+  .panel h2{font:700 13px 'Chakra Petch';letter-spacing:.14em;text-transform:uppercase;color:var(--suave);margin:0 0 12px}
+  label{display:block;font:600 11px 'IBM Plex Mono';letter-spacing:.08em;text-transform:uppercase;color:var(--suave);margin:10px 0 4px}
+  input,select{width:100%;background:#0A1124;border:1px solid var(--linea);color:var(--texto);border-radius:10px;padding:9px 11px;font:500 14px 'IBM Plex Mono'}
+  input:focus,select:focus{outline:2px solid var(--azul);outline-offset:1px}
+  .fila{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  button{font:700 13px 'Chakra Petch';letter-spacing:.08em;border:0;border-radius:12px;padding:12px;cursor:pointer;width:100%;margin-top:14px;color:#fff;background:linear-gradient(90deg,var(--azul),var(--morado))}
+  button.sec{background:var(--panel2);border:1px solid var(--linea)}
+  button:disabled{opacity:.5;cursor:default}
+  button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+  .pasos{list-style:none;padding:0;margin:0;display:grid;gap:6px}
+  .pasos li{display:flex;gap:10px;align-items:center;background:var(--panel2);border-radius:10px;padding:8px 10px;font-size:13px}
+  .pasos .ic{width:20px;height:20px;border-radius:50%;flex:none;display:grid;place-items:center;font:700 11px 'IBM Plex Mono';background:#0A1124;color:var(--suave)}
+  .pasos li.ok .ic{background:var(--verde);color:#062014}
+  .pasos li.run .ic{background:var(--ambar);color:#2A1A00}
+  .pasos li.err .ic{background:var(--rojo);color:#2A0008}
+  .pasos code{font:500 11.5px 'IBM Plex Mono';color:var(--suave);margin-left:auto}
+  .derecha{display:grid;gap:16px}
+  .escena{position:relative;height:300px;border-radius:12px;overflow:hidden;background:
+      linear-gradient(rgba(61,123,255,.08) 1px,transparent 1px) 0 0/30px 30px,
+      linear-gradient(90deg,rgba(61,123,255,.08) 1px,transparent 1px) 0 0/30px 30px,#0A1124}
+  #carro{position:absolute;left:50%;top:50%;width:64px;height:40px;margin:-20px 0 0 -32px;transition:transform .5s ease}
+  .hud{position:absolute;left:12px;top:12px;font:600 12px 'IBM Plex Mono';color:var(--suave)}
+  .hud b{color:var(--texto);font-size:18px;display:block;font-family:'Chakra Petch'}
+  .estado{position:absolute;right:12px;top:12px;font:600 11px 'IBM Plex Mono';padding:4px 10px;border-radius:99px;background:var(--panel2)}
+  .estado.on{color:var(--verde)}.estado.off{color:var(--rojo)}
+  .barra{height:6px;background:var(--panel2);border-radius:99px;overflow:hidden;margin-top:10px}
+  .barra i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--verde),var(--azul));transition:width .3s}
+  .log{height:300px;overflow:auto;font:500 12px/1.55 'IBM Plex Mono';background:#0A1124;border-radius:12px;padding:10px}
+  .log div{padding:3px 0;border-bottom:1px solid rgba(38,51,90,.5);white-space:pre-wrap;word-break:break-word}
+  .log .t{color:var(--suave)}.log .e{font-weight:600}
+  .log .e.estado_actual{color:var(--azul)}.log .e.demo_inicio,.log .e.demo_fin{color:var(--verde)}
+  .log .e.demo_movimiento{color:var(--ambar)}.log .e.demo_cancelada,.log .e.error,.log .e.demo_error{color:var(--rojo)}
+  .log .e.movimiento{color:var(--morado)}
+  .nota{font-size:12px;color:var(--suave);margin-top:8px}
+</style>
+</head>
+<body>
+<div style="max-width:1280px;margin:0 auto">
+  <h1>Simulador DEMO · Vehículo IoT</h1>
+  <p class="sub">Crea un vehículo con sus comandos, arma una DEMO de N movimientos, la ejecuta y muestra en vivo los eventos que llegan por WebSocket.</p>
+</div>
+<div class="grid">
+  <form class="panel" id="form">
+    <h2>Escenario</h2>
+    <label for="clave">X-API-Key</label>
+    <input id="clave" type="password" autocomplete="off" required>
+    <label for="nombre">Nombre del vehículo</label>
+    <input id="nombre" value="Carro simulado" maxlength="70" required>
+    <div class="fila">
+      <div><label for="n">Movimientos (N)</label><input id="n" type="number" min="1" max="30" value="6" required></div>
+      <div><label for="dur">Duración (ms)</label><input id="dur" type="number" min="200" max="5000" step="100" value="900" required></div>
+    </div>
+    <div class="fila">
+      <div><label for="pausa">Pausa (ms)</label><input id="pausa" type="number" min="0" max="3000" step="100" value="300" required></div>
+      <div><label for="patron">Secuencia</label>
+        <select id="patron"><option value="cuadro">Recorrido en cuadro</option><option value="zigzag">Zigzag</option><option value="azar">Al azar</option></select></div>
+    </div>
+    <button type="submit" id="go">Crear y ejecutar DEMO</button>
+    <button type="button" class="sec" id="cancelar" disabled>Cancelar DEMO</button>
+    <p class="nota">Cada paso llama a la API real (con sus Stored Procedures). Al final consulta el historial para comprobar que la DEMO no lo modificó.</p>
+    <h2 style="margin-top:18px">Pasos</h2>
+    <ol class="pasos" id="pasos"></ol>
+  </form>
+
+  <div class="derecha">
+    <div class="panel">
+      <h2>Vehículo en vivo</h2>
+      <div class="escena" id="escena">
+        <div class="hud"><span id="hudVeh">Sin vehículo</span><b id="hudCmd">—</b><span id="hudPaso"></span></div>
+        <span class="estado off" id="wsEstado">WebSocket desconectado</span>
+        <svg id="carro" viewBox="0 0 64 40" aria-hidden="true">
+          <rect x="2" y="6" width="60" height="28" rx="8" fill="#3D7BFF"/>
+          <rect x="40" y="10" width="16" height="20" rx="4" fill="#BFD3FF"/>
+          <rect x="6" y="1" width="14" height="6" rx="2" fill="#0A1124"/><rect x="40" y="1" width="14" height="6" rx="2" fill="#0A1124"/>
+          <rect x="6" y="33" width="14" height="6" rx="2" fill="#0A1124"/><rect x="40" y="33" width="14" height="6" rx="2" fill="#0A1124"/>
+        </svg>
+      </div>
+      <div class="barra"><i id="barra"></i></div>
+    </div>
+    <div class="panel">
+      <h2>Eventos WebSocket recibidos</h2>
+      <div class="log" id="log" aria-live="polite"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const API = location.origin;
+  const WS = API.replace(/^http/, 'ws');
+  try { $('#clave').value = localStorage.getItem('ctl.apikey') || ''; } catch {}
+
+  // Catálogo de comandos que se da de alta en el vehículo nuevo
+  const CATALOGO = [
+    ['AVANZAR', 1, 'Avanzar en línea recta'], ['RETROCEDER', 2, 'Mover hacia atrás'],
+    ['GIRAR_IZQUIERDA', 3, 'Girar a la izquierda'], ['GIRAR_DERECHA', 4, 'Girar a la derecha'],
+    ['DETENER', 9, 'Detener el vehículo'],
+  ];
+  const PATRONES = {
+    cuadro: ['AVANZAR', 'GIRAR_DERECHA'],
+    zigzag: ['AVANZAR', 'GIRAR_IZQUIERDA', 'AVANZAR', 'GIRAR_DERECHA'],
+    azar: null,
+  };
+
+  // ---- pasos visibles ----
+  const pasos = $('#pasos');
+  function paso(txt, ruta) {
+    const li = document.createElement('li'); li.className = 'run';
+    li.innerHTML = `<span class="ic">…</span><span></span><code></code>`;
+    li.children[1].textContent = txt; li.children[2].textContent = ruta || '';
+    pasos.append(li);
+    return { ok(extra) { li.className = 'ok'; li.children[0].textContent = '✓'; if (extra) li.children[1].textContent += ' · ' + extra; },
+             err(m) { li.className = 'err'; li.children[0].textContent = '!'; li.children[1].textContent += ' · ' + m; } };
+  }
+
+  // ---- llamadas a la API ----
+  async function api(metodo, ruta, cuerpo) {
+    const r = await fetch(API + ruta, { method: metodo,
+      headers: { 'Content-Type': 'application/json', 'X-API-Key': $('#clave').value.trim() },
+      body: cuerpo ? JSON.stringify(cuerpo) : undefined });
+    const datos = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(`${r.status} ${datos.detail ? (typeof datos.detail === 'string' ? datos.detail : 'datos inválidos') : ''}`.trim());
+    return datos;
+  }
+  const idDe = (o, k) => o[k] ?? o.id ?? (o.datos && o.datos[k]) ?? (o.vehiculo && o.vehiculo[k]) ?? (o.demo && o.demo[k]) ?? (o.comando && o.comando[k]);
+
+  // ---- escena ----
+  let pos = { x: 0, y: 0, ang: 0 };
+  const carro = $('#carro');
+  function mover(cmd) {
+    const paso = 34, rad = pos.ang * Math.PI / 180;
+    if (cmd === 'AVANZAR') { pos.x += Math.cos(rad) * paso; pos.y += Math.sin(rad) * paso; }
+    if (cmd === 'RETROCEDER') { pos.x -= Math.cos(rad) * paso; pos.y -= Math.sin(rad) * paso; }
+    if (cmd === 'GIRAR_DERECHA') pos.ang += 90;
+    if (cmd === 'GIRAR_IZQUIERDA') pos.ang -= 90;
+    const esc = $('#escena').getBoundingClientRect(), mx = esc.width / 2 - 40, my = esc.height / 2 - 30;
+    pos.x = Math.max(-mx, Math.min(mx, pos.x)); pos.y = Math.max(-my, Math.min(my, pos.y));
+    carro.style.transform = `translate(${pos.x}px,${pos.y}px) rotate(${pos.ang}deg)`;
+  }
+  function log(m) {
+    const d = document.createElement('div');
+    const hora = new Date().toLocaleTimeString('es-MX', { hour12: false });
+    const { evento, id_vehiculo, ts, marca_tiempo, ...resto } = m;
+    d.innerHTML = `<span class="t">${hora}</span> <span class="e ${evento}">${evento}</span> `;
+    d.append(document.createTextNode(JSON.stringify(resto)));
+    $('#log').prepend(d);
+  }
+
+  // ---- WebSocket ----
+  let ws = null, idV = null;
+  function conectarWS(id) {
+    return new Promise((ok, mal) => {
+      ws = new WebSocket(`${WS}/ws/vehiculos/${id}`);
+      ws.onopen = () => { $('#wsEstado').textContent = `WS conectado · vehículo ${id}`; $('#wsEstado').className = 'estado on'; ok(); };
+      ws.onerror = () => mal(new Error('No se pudo abrir el WebSocket'));
+      ws.onclose = () => { $('#wsEstado').textContent = 'WebSocket desconectado'; $('#wsEstado').className = 'estado off'; };
+      ws.onmessage = ev => {
+        let m; try { m = JSON.parse(ev.data); } catch { return; }
+        if (m.evento === 'pong') return;
+        log(m);
+        if (m.evento === 'demo_movimiento') {
+          mover(m.comando); $('#hudCmd').textContent = m.comando;
+          $('#hudPaso').textContent = `Paso ${m.numero} de ${m.total_movimientos} · ${m.duracion_ms} ms + ${m.pausa_ms} ms`;
+          $('#barra').style.width = (m.numero / m.total_movimientos * 100) + '%';
+        }
+        if (m.evento === 'estado_actual') $('#hudCmd').textContent = m.comando || 'Sin movimientos';
+        if (m.evento === 'demo_fin' || m.evento === 'demo_cancelada' || m.evento === 'demo_error') terminar(m.evento);
+      };
+    });
+  }
+  let alTerminar = null;
+  function terminar(ev) { $('#cancelar').disabled = true; if (alTerminar) alTerminar(ev); }
+
+  // ---- flujo completo ----
+  $('#form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const n = +$('#n').value, dur = +$('#dur').value, pausa = +$('#pausa').value;
+    if (!$('#clave').value.trim()) return;
+    $('#go').disabled = true; pasos.innerHTML = ''; $('#log').innerHTML = ''; $('#barra').style.width = '0';
+    pos = { x: 0, y: 0, ang: 0 }; carro.style.transform = '';
+    if (ws) ws.close();
+    try {
+      let p = paso('Crear vehículo', 'POST /vehiculos');
+      const v = await api('POST', '/vehiculos', { nombre: `${$('#nombre').value.trim()} ${new Date().toLocaleTimeString('es-MX', { hour12: false })}`,
+        modelo: 'Simulador', descripcion: 'Vehículo creado por el simulador de DEMO', microcontrolador: 'ESP32' });
+      idV = idDe(v, 'id_vehiculo'); p.ok(`id ${idV}`); $('#hudVeh').textContent = `Vehículo ${idV}`;
+
+      p = paso(`Registrar ${CATALOGO.length} comandos`, 'POST /comandos');
+      const ids = {};
+      for (const [nombre, codigo, descripcion] of CATALOGO) {
+        const c = await api('POST', `/vehiculos/${idV}/comandos`, { nombre, codigo, descripcion });
+        ids[nombre] = idDe(c, 'id_comando');
+      }
+      p.ok(Object.keys(ids).length + ' comandos');
+
+      p = paso('Crear DEMO', 'POST /demos');
+      const d = await api('POST', `/vehiculos/${idV}/demos`, { nombre: `DEMO de ${n} movimientos`, descripcion: 'Generada por el simulador' });
+      const idD = idDe(d, 'id_demo'); p.ok(`id ${idD}`);
+
+      p = paso(`Agregar ${n} movimientos`, 'POST /demos/{id}/movimientos');
+      const patron = PATRONES[$('#patron').value];
+      const movibles = ['AVANZAR', 'RETROCEDER', 'GIRAR_IZQUIERDA', 'GIRAR_DERECHA'];
+      for (let i = 1; i <= n; i++) {
+        let cmd = i === n ? 'DETENER' : patron ? patron[(i - 1) % patron.length] : movibles[Math.floor(Math.random() * movibles.length)];
+        await api('POST', `/vehiculos/${idV}/demos/${idD}/movimientos`, { id_comando: ids[cmd], orden: i, duracion_ms: dur, pausa_ms: pausa });
+      }
+      p.ok();
+
+      p = paso('Consultar historial antes', 'GET /historial');
+      const antes = await api('GET', `/vehiculos/${idV}/historial`);
+      const totalAntes = antes.total_devueltos ?? (antes.movimientos || antes).length ?? 0; p.ok(`${totalAntes} registros`);
+
+      p = paso('Abrir WebSocket', `WS /ws/vehiculos/${idV}`);
+      await conectarWS(idV); p.ok();
+      setInterval(() => ws && ws.readyState === 1 && ws.send('ping'), 25000);
+
+      p = paso('Iniciar DEMO', `POST /demos/${idD}/iniciar`);
+      const fin = new Promise(r => alTerminar = r);
+      await api('POST', `/vehiculos/${idV}/demos/${idD}/iniciar`); p.ok('202');
+      $('#cancelar').disabled = false;
+
+      p = paso('Recibir eventos por WebSocket', 'demo_inicio … demo_fin');
+      const ev = await fin; ev === 'demo_fin' ? p.ok('completa') : p.err(ev);
+
+      p = paso('Consultar historial después', 'GET /historial');
+      const desp = await api('GET', `/vehiculos/${idV}/historial`);
+      const totalDesp = desp.total_devueltos ?? (desp.movimientos || desp).length ?? 0;
+      totalDesp === totalAntes ? p.ok(`${totalDesp} registros · sin cambios`) : p.err(`pasó de ${totalAntes} a ${totalDesp}`);
+    } catch (err) {
+      paso('Error', '').err(err.message);
+    } finally {
+      $('#go').disabled = false;
+    }
+  });
+
+  $('#cancelar').addEventListener('click', async () => {
+    if (!idV) return;
+    try { await api('POST', `/vehiculos/${idV}/demos/cancelar`); } catch (e) { paso('Cancelar', '').err(e.message); }
+  });
+})();
+</script>
+</body>
+</html>

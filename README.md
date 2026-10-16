@@ -1,10 +1,26 @@
-# API Vehículo IoT — Práctica 2.5 (entorno Dev)
+# API Vehículo IoT — 2.6 Examen Tema 2 (EC2 + RDS)
 
 API en **Python + FastAPI** con **programación orientada a objetos** que controla el vehículo IoT del esquema
 `vehiculo_iot` alojado en **Amazon RDS (MySQL)**. Integra los **21 Stored Procedures**, ofrece servicios **GET** y **POST**,
-monitoreo y DEMO por **WebSocket**, y documentación en **Swagger UI**.
+monitoreo y DEMO por **WebSocket seguro (WSS)**, y documentación en **Swagger UI**. Se publica en **Amazon EC2**.
 
-> Solo se ejecuta en local (`http://localhost:8000`). El despliegue público con HTTPS/WSS corresponde a la práctica 2.6.
+> La versión local de la práctica 2.5 está en la etiqueta [`practica-2.5`](../../tree/practica-2.5).
+
+## Enlaces públicos
+
+| Servicio | URL |
+|---|---|
+| Swagger UI (HTTPS) | `https://<dominio>/docs` |
+| WebSocket (WSS) | `wss://<dominio>/ws/vehiculos/{id_vehiculo}` |
+| Simulador de DEMO | `https://<dominio>/control/simulador.html` |
+| Control remoto | `https://<dominio>/control/` |
+
+## Simulador de DEMO
+
+`/control/simulador.html` arma un escenario completo contra la API real: crea un vehículo, registra sus comandos,
+crea una DEMO de **N** movimientos, abre el WebSocket del vehículo, inicia la DEMO y muestra en vivo `demo_inicio`,
+cada `demo_movimiento` y `demo_fin`. Al final consulta el historial para comprobar que la DEMO no lo modificó.
+Pide la `X-API-Key` porque crea registros.
 
 ## Arquitectura
 
@@ -95,8 +111,12 @@ Códigos usados: 200, 201, 202, 400, 401, 403, 404, 409, 422, 500 y 503.
 ## WebSocket
 
 ```
-ws://localhost:8000/ws/vehiculos/{id_vehiculo}
+wss://<dominio>/ws/vehiculos/{id_vehiculo}      # público (EC2, detrás de HTTPS)
+ws://localhost:8000/ws/vehiculos/{id_vehiculo}  # local
 ```
+
+Se pueden abrir varios clientes al mismo vehículo; si se pierde la conexión, el cliente se reconecta y vuelve a
+recibir `estado_actual` con el último estado guardado en RDS.
 
 Cada cliente recibe solo los eventos de su vehículo; se admiten varios clientes a la vez. Enviar `ping` responde `pong`.
 Todos los mensajes llevan `evento`, `id_vehiculo` y `timestamp`.
@@ -132,4 +152,7 @@ Un mensaje enviado no significa que el vehículo físico lo ejecutó: la confirm
 3. En AWS:
    - Security Group del EC2: regla de entrada **TCP 8000** (origen 0.0.0.0/0 o tu IP).
    - Security Group de RDS: regla **MySQL 3306** con origen el Security Group (o la IP privada) del EC2.
-4. Prueba desde fuera: `http://<IP-pública>:8000/docs`, `http://<IP-pública>:8000/control/` y `ws://<IP-pública>:8000/ws/vehiculos/1`.
+4. HTTPS/WSS: Caddy funciona como proxy inverso en los puertos 80/443, obtiene el certificado de Let's Encrypt
+   y reenvía todo a `localhost:8000` (incluido el WebSocket). El dominio se forma con la IP elástica en
+   `sslip.io` (por ejemplo `13-218-5-111.sslip.io`). En el Security Group del EC2 se abren **TCP 80 y 443**.
+5. Prueba desde fuera: `https://<dominio>/docs`, `https://<dominio>/control/simulador.html` y `wss://<dominio>/ws/vehiculos/1`.
