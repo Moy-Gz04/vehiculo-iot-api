@@ -16,6 +16,7 @@ from app.documentacion import DESCRIPCION, TAGS, pagina_docs
 from app.errores import ErrorNegocio
 from app.rutas.demos import demos
 from app.rutas.estado import estado, historial
+from app.rutas.portal import portal_api
 from app.rutas.vehiculos import comandos, vehiculos
 from app.rutas.ws import ws_router
 
@@ -35,16 +36,22 @@ app = FastAPI(
 def documentacion():
     return pagina_docs(app.openapi_url, app.title)
 
-for r in (vehiculos, comandos, estado, historial, demos, ws_router):
+for r in (vehiculos, comandos, estado, historial, demos, ws_router, portal_api):
     app.include_router(r)
 
-# Control remoto web (mismo origen que la API: http://localhost:8000/control/)
+# Portal del proyecto (API, simulador, control y guía del examen) y control remoto web, mismo origen que la API
+app.mount("/portal", StaticFiles(directory=Path(__file__).parent / "web" / "portal", html=True), name="portal")
 app.mount("/control", StaticFiles(directory=Path(__file__).parent / "web", html=True), name="control")
 
 
 @app.get("/control", include_in_schema=False)
 def control():
     return RedirectResponse("/control/")
+
+
+@app.get("/portal", include_in_schema=False)
+def portal():
+    return RedirectResponse("/portal/")
 
 
 @app.get("/", tags=["Sistema"], summary="Comprobar que la API responde")

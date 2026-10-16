@@ -1,4 +1,6 @@
 """Conexión a MySQL (Amazon RDS) y ejecución segura de Stored Procedures."""
+import time
+from collections import Counter
 from contextlib import contextmanager
 from typing import Any, Iterator
 
@@ -10,6 +12,21 @@ from app.config import Configuracion
 
 class ErrorBaseDatos(Exception):
     """La base de datos no respondió o rechazó la operación."""
+
+
+class UsoProcedimientos:
+    """Lleva la cuenta de cuántas veces se ejecutó cada SP desde que arrancó la API (evidencia de uso)."""
+
+    def __init__(self) -> None:
+        self.llamadas: Counter = Counter()
+        self.ultima: dict[str, float] = {}
+
+    def registrar(self, sp: str) -> None:
+        self.llamadas[sp] += 1
+        self.ultima[sp] = time.time()
+
+
+uso_sp = UsoProcedimientos()
 
 
 class BaseDatos:
@@ -47,6 +64,16 @@ class BaseDatos:
         with self.transaccion() as s:
             return s.llamar(sp, *args)
 
+    def consulta(self, sql: str, *args: Any) -> list[dict]:
+        """Consulta de solo lectura para el diagnóstico del portal (metadatos, nunca datos de negocio)."""
+        con = self._conectar()
+        try:
+            with con.cursor() as cur:
+                cur.execute(sql, args)
+                return list(cur.fetchall())
+        finally:
+            con.close()
+
 
 class Sesion:
     """Una conexión abierta dentro de una transacción."""
@@ -56,6 +83,7 @@ class Sesion:
 
     def llamar(self, sp: str, *args: Any) -> list[dict]:
         # callproc envía los valores como parámetros enlazados: nunca se concatenan en el SQL
+        uso_sp.registrar(sp)
         with self._con.cursor() as cur:
             cur.callproc(sp, args)
             filas = list(cur.fetchall())
