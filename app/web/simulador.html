@@ -107,7 +107,22 @@
         <button type="button" class="chico" data-plantilla="azar">Al azar</button>
         <button type="button" class="chico" data-plantilla="vaciar">Vaciar</button>
       </div>
-      <div class="fila2" style="margin-bottom:8px;align-items:end"><div><label class="t" for="cantidad">Cantidad de movimientos</label><input id="cantidad" type="number" min="1" max="40" value="8"></div><div><label class="t" for="dur-def">Duración por defecto (ms)</label><input id="dur-def" type="number" min="100" max="60000" step="100" value="1000"></div></div>
+      <label class="t">Figuras (mini demos)</label>
+      <div class="plantillas">
+        <button type="button" class="chico" data-figura="cuadrado">Cuadrado</button>
+        <button type="button" class="chico" data-figura="rectangulo">Rectángulo</button>
+        <button type="button" class="chico" data-figura="triangulo">Triángulo</button>
+        <button type="button" class="chico" data-figura="pentagono">Pentágono</button>
+        <button type="button" class="chico" data-figura="hexagono">Hexágono</button>
+        <button type="button" class="chico" data-figura="octagono">Octágono</button>
+        <button type="button" class="chico" data-figura="estrella">Estrella</button>
+        <button type="button" class="chico" data-figura="circulo">Círculo</button>
+      </div>
+      <div class="fila2" style="margin-bottom:8px">
+        <div><label class="t" for="lado-ms">Lado: ms de avance</label><input id="lado-ms" type="number" min="100" max="20000" step="10" value="1200"></div>
+        <div><label class="t" for="giro90">ms para girar 90°</label><input id="giro90" type="number" min="100" max="20000" step="10" value="1310" title="Ajústalo hasta que en el carro real la figura cierre"></div>
+      </div>
+      <div class="fila2" style="margin-bottom:8px;align-items:end"><div><label class="t" for="cantidad">Cantidad de movimientos</label><input id="cantidad" type="number" min="1" max="40" value="8"></div><div><label class="t" for="dur-def">Duración por defecto (ms)</label><input id="dur-def" type="number" min="100" max="60000" step="10" value="1000"></div></div>
       <div class="pasos-demo" id="pasos-demo"></div>
       <button type="button" class="sec" id="agregar">+ Agregar movimiento</button>
       <div class="totales"><span id="total-tiempo">0.0 s</span><span>duración · pausa en ms</span></div>
@@ -321,7 +336,8 @@ function borrarRastro() { pts.length = 0; rehacerCinta(); marcas.clear(); puntoR
 puntoRastro();
 
 /* --- Animación de un movimiento --- */
-const VEL = { avance: 1.4, giro: 1.2, torreta: 1.3, art: 0.9 };       // unidades/s y rad/s
+const VEL = { avance: 1.4, giro: 1.2, torreta: 1.3, art: 0.9 };
+const giroCal = () => (Math.PI / 2) / (Math.max(100, +document.getElementById('giro90').value || 1310) / 1000);   // rad/s según «ms para girar 90°»       // unidades/s y rad/s
 let accion = null;   // { cmd, fin }
 function animarComando(cmd, ms) { const t = performance.now(); if (accion) avanzarHasta(t); accion = { cmd, inicio: t, fin: t + ms, ult: t }; $('#hud-cmd').textContent = bonito(cmd); }
 const clamp = (v, [a, b]) => Math.min(b, Math.max(a, v));
@@ -341,8 +357,8 @@ function paso(dt) {
     const s = (c === 'AVANZAR' ? 1 : -1) * VEL.avance * dt;
     fis.x -= Math.sin(fis.rumbo) * s; fis.z -= Math.cos(fis.rumbo) * s;
     ruedas.forEach(r => r.rotation.x -= s * 5); puntoRastro();
-  } else if (c === 'GIRAR_IZQUIERDA') { fis.rumbo += VEL.giro * dt; ruedas.forEach(r => r.rotation.x -= dt * 2); }
-  else if (c === 'GIRAR_DERECHA') { fis.rumbo -= VEL.giro * dt; ruedas.forEach(r => r.rotation.x += dt * 2); }
+  } else if (c === 'GIRAR_IZQUIERDA') { fis.rumbo += giroCal() * dt; ruedas.forEach(r => r.rotation.x -= dt * 2); }
+  else if (c === 'GIRAR_DERECHA') { fis.rumbo -= giroCal() * dt; ruedas.forEach(r => r.rotation.x += dt * 2); }
   else if (c === 'ROTAR_IZQUIERDA') fis.torreta += VEL.torreta * dt;
   else if (c === 'ROTAR_DERECHA') fis.torreta -= VEL.torreta * dt;
   else if (c === 'SUBIR_BRAZO') { fis.pluma = clamp(fis.pluma + VEL.art * dt, LIM.pluma); fis.brazo = clamp(fis.brazo - VEL.art * 0.5 * dt, LIM.brazo); }
@@ -383,8 +399,8 @@ function pintarPasos() {
   caja.innerHTML = pasos.map((p, i) => `<div class="paso" data-i="${i}">
     <span class="n">${i + 1}</span>
     <select data-k="cmd" aria-label="Movimiento ${i + 1}">${NOMBRES.map(n => `<option value="${n}" ${n === p.cmd ? 'selected' : ''}>${bonito(n)}</option>`).join('')}</select>
-    <input data-k="dur" type="number" min="100" max="60000" step="100" value="${p.dur}" aria-label="Duración del paso ${i + 1} en ms" title="Duración (ms)">
-    <input data-k="pausa" type="number" min="0" max="60000" step="100" value="${p.pausa}" aria-label="Pausa después del paso ${i + 1} en ms" title="Pausa (ms)">
+    <input data-k="dur" type="number" min="100" max="60000" step="10" value="${p.dur}" aria-label="Duración del paso ${i + 1} en ms" title="Duración (ms)">
+    <input data-k="pausa" type="number" min="0" max="60000" step="10" value="${p.pausa}" aria-label="Pausa después del paso ${i + 1} en ms" title="Pausa (ms)">
     <span class="acc"><button type="button" data-a="sube" title="Subir" ${i === 0 ? 'disabled' : ''}>↑</button><button type="button" data-a="baja" title="Bajar" ${i === pasos.length - 1 ? 'disabled' : ''}>↓</button><button type="button" data-a="quita" title="Quitar">×</button></span>
   </div>`).join('') || '<div class="nota">Agrega movimientos o elige una plantilla.</div>';
   const total = pasos.reduce((a, p) => a + (+p.dur || 0) + (+p.pausa || 0), 0);
@@ -408,6 +424,23 @@ $('#cantidad').addEventListener('change', () => {
   while (pasos.length < n) pasos.push({ cmd: ciclo[pasos.length % 2], dur, pausa: 250 });
   pasos.length = n; $('#cantidad').value = n; pintarPasos();
 });
+// Figuras: lados de avance y giros calculados con «ms para girar 90°» (giro exterior = 360°/lados)
+function figura(tipo) {
+  const lado = Math.max(100, +$('#lado-ms').value || 1200), g90 = Math.max(100, +$('#giro90').value || 1310);
+  const giro = grados => Math.round(g90 * grados / 90 / 10) * 10, P = 200, out = [];
+  const poligono = (n, lados = Array(n).fill(lado)) => lados.forEach(l => out.push({ cmd: 'AVANZAR', dur: l, pausa: P }, { cmd: 'GIRAR_DERECHA', dur: giro(360 / n), pausa: P }));
+  if (tipo === 'cuadrado') poligono(4);
+  if (tipo === 'rectangulo') poligono(4, [lado * 2, lado, lado * 2, lado].map(v => Math.round(v / 10) * 10));
+  if (tipo === 'triangulo') poligono(3);
+  if (tipo === 'pentagono') poligono(5);
+  if (tipo === 'hexagono') poligono(6);
+  if (tipo === 'octagono') poligono(8, Array(8).fill(Math.round(lado * 0.6 / 10) * 10));
+  if (tipo === 'estrella') for (let i = 0; i < 5; i++) out.push({ cmd: 'AVANZAR', dur: lado * 2, pausa: P }, { cmd: 'GIRAR_DERECHA', dur: giro(144), pausa: P });
+  if (tipo === 'circulo') for (let i = 0; i < 12; i++) out.push({ cmd: 'AVANZAR', dur: Math.round(lado * 0.4 / 10) * 10, pausa: 0 }, { cmd: 'GIRAR_DERECHA', dur: giro(30), pausa: 0 });
+  out.push({ cmd: 'DETENER', dur: 400, pausa: 0 });
+  return out;
+}
+document.querySelectorAll('[data-figura]').forEach(b => b.onclick = () => { pasos = figura(b.dataset.figura); pintarPasos(); });
 $('#agregar').onclick = () => { if (pasos.length >= 40) return; const ult = pasos.at(-1); pasos.push({ cmd: ult && ult.cmd === 'AVANZAR' ? 'GIRAR_DERECHA' : 'AVANZAR', dur: 1000, pausa: 250 }); pintarPasos(); $('#pasos-demo').scrollTop = 1e6; };
 document.querySelectorAll('[data-plantilla]').forEach(b => b.onclick = () => { pasos = PLANTILLAS[b.dataset.plantilla]().map(([cmd, dur, pausa]) => ({ cmd, dur, pausa })); pintarPasos(); });
 pasos = PLANTILLAS.excavar().map(([cmd, dur, pausa]) => ({ cmd, dur, pausa })); pintarPasos();
