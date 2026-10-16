@@ -516,7 +516,7 @@ function vSimulador(v) {
     ['Escenario', 'Escribe el nombre del carro, cuántos movimientos (N), su duración y pausa.'],
     ['Crear y ejecutar', 'El simulador crea el vehículo, sus 5 comandos y la DEMO con N pasos, abre el WSS y la inicia.'],
     ['Comprueba', 'Mira cada evento llegar y el carrito moverse; al final verifica que el historial no cambió.'],
-  ], 'simulador'), marco('/control/simulador.html', 'Simulador DEMO', 'calc(100vh - 200px)'));
+  ], 'simulador'), marco('/control/simulador.html?v=3d', 'Simulador DEMO', 'calc(100vh - 200px)'));
 }
 function vControl(v) {
   v.classList.add('ancha');
