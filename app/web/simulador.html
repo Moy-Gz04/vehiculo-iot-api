@@ -7,11 +7,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
-  :root{--fondo:#0A0E18;--panel:#111827;--panel2:#172033;--linea:#243049;--texto:#E6ECFF;--suave:#8D9AC4;--tenue:#5E6A8C;
-        --azul:#3D7BFF;--verde:#2FD38A;--ambar:#FFB547;--rojo:#FF5D73;--morado:#A57BFF;--amarillo:#F2B33D}
+  :root{--fondo:#03070A;--panel:#060E12;--panel2:#0A171C;--linea:#10303A;--texto:#D8FFF1;--suave:#6FAE99;--tenue:#3D7465;
+        --azul:#22D3EE;--verde:#00FF9C;--ambar:#FFC23D;--rojo:#FF3B6B;--morado:#7DF9FF;--amarillo:#F2B33D}
   *{box-sizing:border-box}
-  body{margin:0;background:var(--fondo);color:var(--texto);font:400 14px/1.5 'IBM Plex Sans',system-ui,sans-serif;padding:18px 16px 40px}
-  h1{font:700 24px 'Chakra Petch',sans-serif;margin:0;letter-spacing:.02em}
+  body{margin:0;background:linear-gradient(rgba(0,255,156,.035) 1px,transparent 1px) 0 0/28px 28px,linear-gradient(90deg,rgba(0,255,156,.035) 1px,transparent 1px) 0 0/28px 28px,var(--fondo);color:var(--texto);font:400 14px/1.5 'IBM Plex Sans',system-ui,sans-serif;padding:18px 16px 40px}
+  h1{font:700 22px 'IBM Plex Mono',monospace;margin:0;letter-spacing:.02em;text-shadow:0 0 18px rgba(0,255,156,.25)}
+  h1::before{content:'> ';color:var(--verde)}
+  h1::after{content:'_';color:var(--verde);animation:cur 1.1s steps(1) infinite}@keyframes cur{50%{opacity:0}}
+  .panel h2{color:var(--azul)!important}.panel h2::before{content:'//';opacity:.6}
+  .panel{box-shadow:0 0 0 1px rgba(0,255,156,.03),0 10px 30px rgba(0,0,0,.5)}
+  button.pri{background:var(--verde)!important;color:#00140B!important;box-shadow:0 0 18px -4px var(--verde)}
+  #go:disabled{box-shadow:none}
   .sub{color:var(--suave);margin:4px 0 16px;max-width:900px}
   .grid{display:grid;grid-template-columns:440px minmax(0,1fr);gap:14px;max-width:1500px;margin:0 auto}
   .cab{max-width:1500px;margin:0 auto}
@@ -20,7 +26,7 @@
   .panel h2{font:700 12px 'Chakra Petch';letter-spacing:.14em;text-transform:uppercase;color:var(--suave);margin:0 0 10px;display:flex;align-items:center;gap:8px}
   .panel h2 .der{margin-left:auto}
   label.t{display:block;font:600 10.5px 'IBM Plex Mono';letter-spacing:.08em;text-transform:uppercase;color:var(--suave);margin:8px 0 4px}
-  input,select{width:100%;background:#0A1124;border:1px solid var(--linea);color:var(--texto);border-radius:9px;padding:8px 10px;font:500 13px 'IBM Plex Mono'}
+  input,select{width:100%;background:#010406;border:1px solid var(--linea);color:var(--texto);border-radius:9px;padding:8px 10px;font:500 13px 'IBM Plex Mono'}
   input:focus,select:focus,button:focus-visible{outline:2px solid var(--azul);outline-offset:1px}
   .fila2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   button{font:700 12.5px 'Chakra Petch';letter-spacing:.06em;border:0;border-radius:10px;padding:10px 12px;cursor:pointer;color:#fff;background:var(--panel2);border:1px solid var(--linea)}
@@ -29,7 +35,7 @@
   button.sec{width:100%;margin-top:8px}
   button.chico{padding:5px 9px;font-size:11px;border-radius:8px}
   button:disabled{opacity:.45;cursor:default}
-  .real{display:flex;gap:10px;align-items:flex-start;margin-top:10px;padding:10px 12px;border-radius:12px;background:#0A1124;border:1px solid var(--linea);cursor:pointer;font-size:12.5px;color:var(--suave)}
+  .real{display:flex;gap:10px;align-items:flex-start;margin-top:10px;padding:10px 12px;border-radius:12px;background:#010406;border:1px solid var(--linea);cursor:pointer;font-size:12.5px;color:var(--suave)}
   .real input{width:18px;height:18px;margin-top:2px;accent-color:var(--verde);flex:none}
   .real b{display:block;color:var(--texto);font-size:13px}
   .real:has(input:checked){border-color:var(--verde)}
@@ -47,12 +53,12 @@
   .totales{display:flex;justify-content:space-between;font:500 11.5px 'IBM Plex Mono';color:var(--suave);margin-top:8px}
   .lista-pasos{list-style:none;padding:0;margin:0;display:grid;gap:5px}
   .lista-pasos li{display:flex;gap:8px;align-items:center;background:var(--panel2);border-radius:9px;padding:6px 9px;font-size:12.5px}
-  .lista-pasos .ic{width:18px;height:18px;border-radius:50%;flex:none;display:grid;place-items:center;font:700 10px 'IBM Plex Mono';background:#0A1124;color:var(--suave)}
+  .lista-pasos .ic{width:18px;height:18px;border-radius:50%;flex:none;display:grid;place-items:center;font:700 10px 'IBM Plex Mono';background:#010406;color:var(--suave)}
   .lista-pasos li.ok .ic{background:var(--verde);color:#062014}.lista-pasos li.run .ic{background:var(--ambar);color:#2A1A00}.lista-pasos li.err .ic{background:var(--rojo);color:#2A0008}
   .lista-pasos code{font:500 11px 'IBM Plex Mono';color:var(--tenue);margin-left:auto;text-align:right}
 
   /* Escena */
-  .escena{position:relative;height:min(62vh,600px);min-height:380px;border-radius:14px;overflow:hidden;background:#0B1020}
+  .escena{position:relative;height:min(46vh,440px);min-height:320px;border-radius:14px;overflow:hidden;background:#03070A}
   .escena canvas{display:block;width:100%;height:100%}
   .hud{position:absolute;left:12px;top:10px;pointer-events:none;font:600 12px 'IBM Plex Mono';color:var(--suave)}
   .hud b{display:block;color:var(--texto);font:700 20px 'Chakra Petch'}
@@ -64,11 +70,13 @@
   .barra i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--verde),var(--azul));transition:width .3s}
 
   /* Registros */
-  .registros{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1fr) minmax(0,1fr);gap:14px;margin-top:14px}
-  @media (max-width:1300px){.registros{grid-template-columns:1fr 1fr}.registros>.panel:first-child{grid-column:1/-1}.registros>.panel:first-child .log{height:auto;max-height:260px}}
+  .registros{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:14px;margin-top:14px}
+  .registros .ev-ancho{grid-column:1/-1}
+  .registros .ev-ancho .log{height:190px}
+  
   @media (max-width:760px){.registros{grid-template-columns:1fr}}
   .log .lista-pasos{padding:4px 0}
-  .log{height:300px;overflow:auto;font:500 12px/1.5 'IBM Plex Mono';background:#0A1124;border-radius:12px;padding:6px 10px}
+  .log{height:300px;overflow:auto;font:500 12px/1.5 'IBM Plex Mono';background:#010406;border-radius:12px;padding:6px 10px}
   .log .vacio{color:var(--tenue);padding:16px 4px;text-align:center}
   .ev{padding:5px 0;border-bottom:1px solid rgba(36,48,73,.6);word-break:break-word}
   .ev .t{color:var(--tenue)} .ev .e{font-weight:600}
@@ -153,9 +161,9 @@
       <div class="barra"><i id="barra"></i></div>
     </div>
     <div class="registros">
-      <div class="panel"><h2>Pasos</h2><div class="log"><ol class="lista-pasos" id="lista-pasos"><li><span class="ic">·</span>Arma la DEMO y pulsa «Crear y ejecutar DEMO».</li></ol></div></div>
+      <div class="panel ev-ancho"><h2>Eventos WebSocket <span class="der chip" id="n-eventos">0</span></h2><div class="log" id="log-ws"><div class="vacio">Aquí llegan estado_actual, demo_inicio, cada demo_movimiento y demo_fin.</div></div></div>
+          <div class="panel"><h2>Pasos</h2><div class="log"><ol class="lista-pasos" id="lista-pasos"><li><span class="ic">·</span>Arma la DEMO y pulsa «Crear y ejecutar DEMO».</li></ol></div></div>
       <div class="panel"><h2>Consultas a la API <span class="der chip" id="n-consultas">0</span></h2><div class="log" id="log-api"><div class="vacio">Aquí aparecen los GET y POST que se envían.</div></div></div>
-      <div class="panel"><h2>Eventos WebSocket <span class="der chip" id="n-eventos">0</span></h2><div class="log" id="log-ws"><div class="vacio">Aquí llegan estado_actual, demo_inicio, cada demo_movimiento y demo_fin.</div></div></div>
     </div>
   </div>
 </div>
@@ -193,7 +201,7 @@ renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadow
 renderer.outputEncoding = THREE.sRGBEncoding; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.9;
 cont.prepend(renderer.domElement);
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0B1020); scene.fog = new THREE.Fog(0x0B1020, 60, 140);
+scene.background = new THREE.Color(0x03070A); scene.fog = new THREE.Fog(0x03070A, 60, 140);
 const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 200);
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true; controls.dampingFactor = 0.08; controls.maxPolarAngle = Math.PI * 0.48; controls.minDistance = 4; controls.maxDistance = 90;
@@ -201,7 +209,7 @@ const VISTA = () => { camera.position.set(8, 6.5, 9); controls.target.set(0, 0.8
 VISTA();
 
 // Iluminación de estudio
-scene.add(new THREE.HemisphereLight(0xb8c8ff, 0x0a0f1c, 0.32));
+scene.add(new THREE.HemisphereLight(0x9fdcd0, 0x02080a, 0.2));
 const sol = new THREE.DirectionalLight(0xfff4e0, 1.6);
 sol.position.set(8, 14, 6); sol.castShadow = true; sol.shadow.mapSize.set(2048, 2048);
 Object.assign(sol.shadow.camera, { left: -16, right: 16, top: 16, bottom: -16, near: 1, far: 50 }); sol.shadow.bias = -0.0004;
@@ -209,9 +217,9 @@ scene.add(sol, sol.target);
 const relleno = new THREE.DirectionalLight(0x8fb2ff, 0.35); relleno.position.set(-8, 5, -6); scene.add(relleno);
 
 // Piso tipo tapete con cuadrícula
-const piso = new THREE.Mesh(new THREE.PlaneGeometry(120, 120), new THREE.MeshStandardMaterial({ color: 0x0c1220, roughness: 0.96, metalness: 0 }));
+const piso = new THREE.Mesh(new THREE.PlaneGeometry(120, 120), new THREE.MeshStandardMaterial({ color: 0x050d10, roughness: 0.96, metalness: 0 }));
 piso.rotation.x = -Math.PI / 2; piso.receiveShadow = true; scene.add(piso);
-const rejilla = new THREE.GridHelper(120, 120, 0x2a3a5e, 0x1a2540); rejilla.position.y = 0.002; rejilla.material.transparent = true; rejilla.material.opacity = 0.35; scene.add(rejilla);
+const rejilla = new THREE.GridHelper(120, 120, 0x0f6b4e, 0x0b3a30); rejilla.position.y = 0.002; rejilla.material.transparent = true; rejilla.material.opacity = 0.6; scene.add(rejilla);
 
 // Materiales con propiedades físicas
 const M = {

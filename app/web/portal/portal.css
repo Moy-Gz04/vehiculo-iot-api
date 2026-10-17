@@ -347,3 +347,52 @@ body.con-enfoque{overflow:hidden}
   .ev .d{grid-column:1 / -1}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ================== Tema "centro de datos" (siempre activo) ================== */
+:root,:root[data-theme="light"],:root[data-theme="dark"]{
+  --bg:#03070A; --bg2:#061015; --sup:#060E12; --sup2:#0A171C; --linea:#10303A; --linea2:#1B4E5A;
+  --txt:#D8FFF1; --txt2:#A9E8D2; --suave:#6FAE99; --tenue:#3D7465;
+  --acento:#00FF9C; --acento2:#22D3EE; --acentoSuave:rgba(0,255,156,.08);
+  --ok:#00FF9C; --okS:rgba(0,255,156,.10); --av:#FFC23D; --avS:rgba(255,194,61,.12); --mal:#FF3B6B; --malS:rgba(255,59,107,.12);
+  --codigo:#010406; --sombra:0 0 0 1px rgba(0,255,156,.04),0 10px 30px rgba(0,0,0,.55);
+  --f-tit:'JetBrains Mono','IBM Plex Mono',ui-monospace,monospace; --f-txt:'IBM Plex Sans',system-ui,sans-serif;
+  color-scheme:dark;
+}
+body{background:
+  radial-gradient(900px 500px at 85% -10%,rgba(34,211,238,.08),transparent 60%),
+  radial-gradient(700px 500px at -10% 110%,rgba(0,255,156,.06),transparent 60%),
+  linear-gradient(rgba(0,255,156,.035) 1px,transparent 1px) 0 0/28px 28px,
+  linear-gradient(90deg,rgba(0,255,156,.035) 1px,transparent 1px) 0 0/28px 28px,var(--bg)}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:90;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 1px,transparent 1px 3px);mix-blend-mode:multiply;opacity:.55}
+#tema{display:none}
+.lado{background:rgba(4,10,13,.92);border-right-color:var(--linea)}
+.barra{background:rgba(3,7,10,.82);border-bottom-color:var(--linea)}
+.marca b{font-family:var(--f-tit);letter-spacing:.06em;text-transform:uppercase;font-size:13.5px}
+.marca b::before{content:"> ";color:var(--acento)}
+.nav a[aria-current="page"]{background:linear-gradient(90deg,rgba(0,255,156,.12),transparent);color:var(--acento);text-shadow:0 0 12px rgba(0,255,156,.45)}
+.nav a[aria-current="page"]::before{background:var(--acento);box-shadow:0 0 10px var(--acento)}
+.grupo,.eyebrow{color:var(--acento2)}
+.eyebrow::before{content:"//";opacity:.6}
+h1.t{font-family:var(--f-tit);letter-spacing:-.01em;text-shadow:0 0 22px rgba(0,255,156,.18)}
+h1.t::after{content:"_";color:var(--acento);margin-left:4px;animation:cursor 1.1s steps(1) infinite}
+@keyframes cursor{50%{opacity:0}}
+h2.t,h3.t{font-family:var(--f-tit)}
+.tarjeta,.criterio,.check,.pasos li,.capa,.clase,.intro,.intro li,.codigo-lay,.tabla-wrap,.marco,.medalla,.hero,.puntaje,.pestanas,.campo,.pildora,.icono-btn{
+  border-color:var(--linea);background-color:rgba(6,14,18,.86)}
+.tarjeta:hover,.criterio:hover,.acceso:hover{border-color:var(--linea2);box-shadow:0 0 0 1px rgba(0,255,156,.08),0 0 24px -6px rgba(0,255,156,.25)}
+.hero{background:radial-gradient(700px 300px at 85% -20%,rgba(0,255,156,.12),transparent 70%),radial-gradient(500px 260px at -10% 120%,rgba(34,211,238,.10),transparent 70%),rgba(6,14,18,.9)}
+.hero .rejilla{background-image:linear-gradient(rgba(0,255,156,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,156,.18) 1px,transparent 1px)}
+.btn.pri{background:var(--acento);color:#00140B;box-shadow:0 0 18px -4px var(--acento);font-family:var(--f-tit);letter-spacing:.03em}
+.btn.pri:hover{background:#5BFFC0}
+.btn.sec{background:rgba(6,14,18,.9);border-color:var(--linea2);color:var(--txt);font-family:var(--f-tit)}
+.btn.sec:hover{border-color:var(--acento);color:var(--acento)}
+.anillo .valor{stroke:var(--acento);filter:drop-shadow(0 0 6px rgba(0,255,156,.6))}
+.anillo .cifra b{font-family:var(--f-tit);color:var(--acento)}
+.kpi .v{font-family:var(--f-tit);color:var(--acento2)}
+.punto.ok{box-shadow:0 0 8px var(--ok)}
+.chip.ok{text-shadow:0 0 8px rgba(0,255,156,.5)}
+.acceso .ic{background:rgba(0,255,156,.08);color:var(--acento);box-shadow:inset 0 0 0 1px var(--linea2)}
+.pie-pagina,.pie-lado{border-top-color:var(--linea)}
+.marco iframe{background:#03070A}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:#12333C;border-radius:8px}::-webkit-scrollbar-track{background:transparent}
