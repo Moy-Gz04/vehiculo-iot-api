@@ -19,7 +19,7 @@
 <div class="app">
   <aside class="lado" id="lado" aria-label="Navegación">
     <div class="marca">
-      <div class="logo"><i data-lucide="truck" class="i"></i></div>
+      <div class="logo"><canvas id="logo3d" width="112" height="112" aria-label="Excavadora 3D en plano azul"></canvas></div>
       <div><b>Vehículo IoT</b><span>FastAPI · EC2 · RDS</span></div>
     </div>
     <nav class="nav" id="nav">
@@ -31,7 +31,7 @@
       <div class="grupo">Guía del examen · 100 pts</div>
       <div id="nav-guia" style="display:grid;gap:2px"></div>
     </nav>
-    <div class="pie-lado">2.6 Examen Tema 2 · Implementación de soluciones IoT</div>
+    <div class="pie-lado"><b>© 2026 Juan Moisés Gómez Aispuro</b><span>Ingeniería en Sistemas Computacionales</span><span>TecNM · Instituto Tecnológico de Pachuca</span></div>
   </aside>
 
   <div class="principal">
@@ -44,6 +44,7 @@
       <button class="icono-btn" id="tema" aria-label="Cambiar tema"><i data-lucide="sun-moon" class="i"></i></button>
     </header>
     <main class="vista" id="vista" tabindex="-1"></main>
+    <footer class="pie-pagina">© 2026 Juan Moisés Gómez Aispuro · No. de control 22200930 · Ingeniería en Sistemas Computacionales · Tecnológico Nacional de México campus Pachuca</footer>
   </div>
 </div>
 
@@ -68,6 +69,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/powershell.min.js"></script>
 <script src="https://unpkg.com/lucide@0.453.0/dist/umd/lucide.min.js"></script>
-<script src="portal.js?v=3"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="logo3d.js"></script>
+<script src="portal.js?v=4"></script>
 </body>
 </html>

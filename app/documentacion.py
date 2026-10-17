@@ -87,5 +87,5 @@ def pagina_docs(openapi_url: str, titulo: str) -> HTMLResponse:
     extra = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
              '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700'
              '&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">'
-             '<link rel="stylesheet" href="/control/docs.css">')
+             '<link rel="stylesheet" href="/control/docs.css?v=2">')
     return HTMLResponse(html.replace("</head>", extra + "</head>", 1))

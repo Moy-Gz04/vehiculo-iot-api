@@ -64,8 +64,10 @@
   .barra i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--verde),var(--azul));transition:width .3s}
 
   /* Registros */
-  .registros{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
-  @media (max-width:1200px){.registros{grid-template-columns:1fr}}
+  .registros{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1fr) minmax(0,1fr);gap:14px;margin-top:14px}
+  @media (max-width:1300px){.registros{grid-template-columns:1fr 1fr}.registros>.panel:first-child{grid-column:1/-1}.registros>.panel:first-child .log{height:auto;max-height:260px}}
+  @media (max-width:760px){.registros{grid-template-columns:1fr}}
+  .log .lista-pasos{padding:4px 0}
   .log{height:300px;overflow:auto;font:500 12px/1.5 'IBM Plex Mono';background:#0A1124;border-radius:12px;padding:6px 10px}
   .log .vacio{color:var(--tenue);padding:16px 4px;text-align:center}
   .ev{padding:5px 0;border-bottom:1px solid rgba(36,48,73,.6);word-break:break-word}
@@ -132,10 +134,6 @@
       <button type="submit" class="pri" id="go">Crear y ejecutar DEMO</button>
       <button type="button" class="sec" id="cancelar" disabled>Cancelar DEMO</button>
     </form>
-    <div class="panel">
-      <h2>Pasos</h2>
-      <ol class="lista-pasos" id="lista-pasos"><li><span class="ic">·</span>Arma la DEMO y pulsa «Crear y ejecutar DEMO».</li></ol>
-    </div>
   </div>
 
   <div style="min-width:0">
@@ -155,6 +153,7 @@
       <div class="barra"><i id="barra"></i></div>
     </div>
     <div class="registros">
+      <div class="panel"><h2>Pasos</h2><div class="log"><ol class="lista-pasos" id="lista-pasos"><li><span class="ic">·</span>Arma la DEMO y pulsa «Crear y ejecutar DEMO».</li></ol></div></div>
       <div class="panel"><h2>Consultas a la API <span class="der chip" id="n-consultas">0</span></h2><div class="log" id="log-api"><div class="vacio">Aquí aparecen los GET y POST que se envían.</div></div></div>
       <div class="panel"><h2>Eventos WebSocket <span class="der chip" id="n-eventos">0</span></h2><div class="log" id="log-ws"><div class="vacio">Aquí llegan estado_actual, demo_inicio, cada demo_movimiento y demo_fin.</div></div></div>
     </div>

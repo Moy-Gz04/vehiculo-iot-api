@@ -39,7 +39,8 @@ button{font:inherit;color:inherit}
 .app{display:grid;grid-template-columns:var(--side) 1fr;min-height:100vh}
 .lado{position:sticky;top:0;height:100vh;overflow:auto;background:var(--sup);border-right:1px solid var(--linea);display:flex;flex-direction:column;scrollbar-width:thin}
 .marca{display:flex;align-items:center;gap:11px;padding:20px 20px 18px}
-.logo{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(140deg,var(--acento),var(--acento2));color:#fff;box-shadow:0 6px 18px -6px var(--acento)}
+.logo{width:56px;height:56px;border-radius:14px;overflow:hidden;flex:none;background:#0B2150;background-image:linear-gradient(rgba(140,180,255,.16) 1px,transparent 1px),linear-gradient(90deg,rgba(140,180,255,.16) 1px,transparent 1px);background-size:8px 8px;box-shadow:0 6px 18px -6px #2449E0,inset 0 0 0 1px rgba(140,180,255,.35)}
+.logo canvas{width:56px;height:56px;display:block}
 .marca b{display:block;font:700 15px/1.1 var(--f-tit);letter-spacing:.02em}
 .marca span{font:500 11px var(--f-mono);color:var(--tenue)}
 .nav{padding:4px 12px 16px;display:grid;gap:2px}
@@ -52,7 +53,9 @@ button{font:inherit;color:inherit}
 .nav .pts{margin-left:auto;font:600 10.5px var(--f-mono);color:var(--tenue)}
 .punto{width:7px;height:7px;border-radius:50%;background:var(--linea2);flex:none;transition:background .3s}
 .punto.ok{background:var(--ok);box-shadow:0 0 0 3px var(--okS)} .punto.mal{background:var(--mal)} .punto.av{background:var(--av)}
-.pie-lado{margin-top:auto;padding:14px 20px 18px;border-top:1px solid var(--linea);font:500 11px var(--f-mono);color:var(--tenue)}
+.pie-lado{margin-top:auto;padding:14px 20px 18px;border-top:1px solid var(--linea);font:500 10.5px/1.5 var(--f-mono);color:var(--tenue);display:grid;gap:1px}
+.pie-lado b{color:var(--txt2);font-weight:600}
+.pie-pagina{margin-top:auto;padding:18px 28px 22px;border-top:1px solid var(--linea);font:500 11.5px/1.5 var(--f-mono);color:var(--tenue);text-align:center}
 
 .principal{min-width:0;display:flex;flex-direction:column}
 .barra{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:10px;padding:12px 28px;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--linea)}
