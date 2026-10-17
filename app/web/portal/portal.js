@@ -797,7 +797,7 @@ $('#mc-borrar').onclick = () => { ponerClave(''); toast('Clave eliminada'); cerr
 $('#modal-clave').addEventListener('click', e => { if (e.target.id === 'modal-clave') cerrarModal(); });
 $('#mc-valor').addEventListener('keydown', e => { if (e.key === 'Enter') $('#mc-guardar').click(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { cerrarModal(); $('#modal-codigo').hidden = true; $('#lado').classList.remove('abierto'); const x = $('.enfoque'); if (x) ampliar(x); } });
-$('#tema').onclick = () => { const a = document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); const n = a === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = n; try { localStorage.setItem('portal.tema', n); } catch {} };
+$('#tema').onclick = () => { const a = document.documentElement.dataset.theme || 'dark'; const n = a === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = n; try { localStorage.setItem('portal.tema', n); } catch {} };
 $('#abrir-menu').onclick = () => $('#lado').classList.toggle('abierto');
 $('#pil-api').onclick = () => { location.hash = '#/inicio'; };
 async function latido() { const r = await pedir('/', { timeout: 6000 }); $('#pil-api').innerHTML = `<span class="punto ${r.ok ? 'ok' : 'mal'}"></span><span>${r.ok ? `API · ${r.ms} ms` : 'API sin respuesta'}</span>`; }
