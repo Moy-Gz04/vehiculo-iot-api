@@ -175,6 +175,7 @@
   remoto.addEventListener('pointerdown', (ev) => {
     const b = ev.target.closest('[data-cmd]'); if (!b || b.disabled) return;
     ev.preventDefault();
+    if (b.hasAttribute('data-sostener')) { presionarPad(b); return; }   // ON/OFF: activo mientras se mantenga presionado (cualquier modo)
     if (b.hasAttribute('data-toque')) {                // funciones: siempre un toque corto
       vibrar(15); b.classList.add('presionada'); setTimeout(() => b.classList.remove('presionada'), 220);
       enviar(b.dataset.cmd, 'toque'); return;
@@ -183,7 +184,7 @@
     presionarPad(b);
   });
   const fin = (ev) => {
-    if (B.dataset.control !== 'pad') return;
+    if (B.dataset.control !== 'pad') { if (st.sostenido) soltarSostenido(); return; }
     botonDe('DETENER')?.classList.remove('presionada');
     if (st.sostenido) soltarSostenido();
   };
