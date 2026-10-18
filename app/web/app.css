@@ -156,17 +156,17 @@ body.en-linea .remoto::before { background: radial-gradient(closest-side, rgba(9
 .carcasa {
   position: relative; z-index: 1; display: grid; gap: 18px 22px; align-items: center;
   grid-template-columns: 1fr minmax(210px, 1.05fr) 1fr;
-  grid-template-areas: "hombros hombros hombros" "traccion lcd brazo" "traccion centro brazo";
+  grid-template-areas: "hombros hombros hombros" "traccion lcd brazo" "traccion centro brazo" "funciones funciones funciones";
   padding: 26px 30px 30px;
 }
 .lcd { grid-area: lcd; } .grupo-traccion { grid-area: traccion; } .grupo-brazo { grid-area: brazo; }
-.grupo-centro { grid-area: centro; } .hombros { grid-area: hombros; }
+.grupo-centro { grid-area: centro; } .hombros { grid-area: hombros; } .funciones { grid-area: funciones; }
 
 /* Vertical */
 body[data-orient="v"] .remoto { width: min(430px, 100%); }
 body[data-orient="v"] .carcasa {
   grid-template-columns: 1fr;
-  grid-template-areas: "lcd" "traccion" "centro" "brazo" "hombros";
+  grid-template-areas: "lcd" "traccion" "centro" "brazo" "hombros" "funciones";
   padding: 26px 20px 28px; gap: 16px;
 }
 
@@ -359,3 +359,14 @@ body[data-control="pad"] .led { top: 18px; right: 50%; transform: translateX(80p
 body[data-control="rc"] .remoto { margin-top: 64px; }
 @media (orientation: portrait) and (max-width: 900px) { body[data-orient="h"][data-control="rc"] .remoto { margin-top: 30px; } }
 @media (orientation: landscape) and (max-height: 500px) { body[data-control="rc"] .remoto { margin-top: 30px; } }
+
+/* Funciones del control físico: fila de 4 botones redondos bajo los hombros */
+.funciones { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin-top: 12px; }
+.funcion { display: grid; place-items: center; gap: 2px; width: 64px; height: 64px; border: 0; border-radius: 50%; cursor: pointer;
+  font: 700 9.5px var(--display); letter-spacing: .1em; transition: transform .12s, box-shadow .2s; }
+.funcion svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.funcion em { font-style: normal; }
+.funcion.presionada { transform: translateY(3px) scale(.96); background: var(--azul) !important; color: #fff !important; box-shadow: 0 0 22px rgba(91, 134, 255, .9) !important; }
+.funcion[data-cmd="ENCENDER"] { color: #FF5D73 !important; }
+body[data-control="rc"] .funcion { background: linear-gradient(180deg, #2B3240, #151A24); color: var(--plata-1); box-shadow: inset 0 0 0 1px rgba(201, 206, 215, .25), 0 4px 0 #000; }
+body[data-control="pad"] .funcion { background: linear-gradient(180deg, var(--plata-1), var(--plata-3)); color: var(--negro); box-shadow: 0 4px 0 var(--plata-4), inset 0 1px 0 #fff; }

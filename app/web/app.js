@@ -100,9 +100,10 @@
       $$('#remoto [data-cmd]').forEach(b => {
         const c = st.comandos.get(b.dataset.cmd);
         b.disabled = !c || !c.activo;
-        b.hidden = !c && b.classList.contains('hombro');
+        b.hidden = !c && (b.classList.contains('hombro') || b.classList.contains('funcion'));
       });
       $('.hombros').hidden = !$$('.hombro:not([hidden])').length;
+      $('.funciones').hidden = !$$('.funcion:not([hidden])').length;
       pintarEstado(d.estado);
       st.demos = d.demos;
       conectar();
@@ -174,6 +175,10 @@
   remoto.addEventListener('pointerdown', (ev) => {
     const b = ev.target.closest('[data-cmd]'); if (!b || b.disabled) return;
     ev.preventDefault();
+    if (b.hasAttribute('data-toque')) {                // funciones: siempre un toque corto
+      vibrar(15); b.classList.add('presionada'); setTimeout(() => b.classList.remove('presionada'), 220);
+      enviar(b.dataset.cmd, 'toque'); return;
+    }
     if (B.dataset.control === 'rc') { pulsoRC(b); return; }
     presionarPad(b);
   });
