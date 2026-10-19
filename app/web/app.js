@@ -102,7 +102,6 @@
         b.disabled = !c || !c.activo;
         b.hidden = !c && (b.classList.contains('hombro') || b.classList.contains('funcion'));
       });
-      $('.hombros').hidden = !$$('.hombro:not([hidden])').length;
       $('.funciones').hidden = !$$('.funcion:not([hidden])').length;
       pintarEstado(d.estado);
       st.demos = d.demos;
@@ -198,7 +197,7 @@
   // Teclado (PC)
   const TECLAS = {
     ArrowUp: 'AVANZAR', ArrowDown: 'RETROCEDER', ArrowLeft: 'GIRAR_IZQUIERDA', ArrowRight: 'GIRAR_DERECHA', ' ': 'DETENER',
-    w: 'SUBIR_BRAZO', s: 'BAJAR_BRAZO', a: 'ROTAR_IZQUIERDA', d: 'ROTAR_DERECHA', q: 'ABRIR_PALA', e: 'CERRAR_PALA',
+    w: 'SUBIR_BRAZO', s: 'BAJAR_BRAZO', a: 'ROTAR_IZQUIERDA', d: 'ROTAR_DERECHA',
   };
   const botonDe = (n) => $(`#remoto [data-cmd="${n}"]`);
   document.addEventListener('keydown', (ev) => {

@@ -156,7 +156,7 @@ body.en-linea .remoto::before { background: radial-gradient(closest-side, rgba(9
 .carcasa {
   position: relative; z-index: 1; display: grid; gap: 18px 22px; align-items: center;
   grid-template-columns: 1fr minmax(210px, 1.05fr) 1fr;
-  grid-template-areas: "hombros hombros hombros" "traccion lcd brazo" "traccion centro brazo" "funciones funciones funciones";
+  grid-template-areas: "traccion lcd brazo" "traccion centro brazo" "funciones funciones funciones";
   padding: 26px 30px 30px;
 }
 .lcd { grid-area: lcd; } .grupo-traccion { grid-area: traccion; } .grupo-brazo { grid-area: brazo; }
@@ -166,7 +166,7 @@ body.en-linea .remoto::before { background: radial-gradient(closest-side, rgba(9
 body[data-orient="v"] .remoto { width: min(430px, 100%); }
 body[data-orient="v"] .carcasa {
   grid-template-columns: 1fr;
-  grid-template-areas: "lcd" "traccion" "centro" "brazo" "hombros" "funciones";
+  grid-template-areas: "lcd" "traccion" "centro" "brazo" "funciones";
   padding: 26px 20px 28px; gap: 16px;
 }
 
