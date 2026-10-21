@@ -134,7 +134,7 @@
       </select>
       <div class="fila2" style="margin-bottom:8px">
         <div><label class="t" for="lado-ms">Lado: ms de avance</label><input id="lado-ms" type="number" min="100" max="20000" step="10" value="1200"></div>
-        <div><label class="t" for="giro90">ms para girar 90°</label><input id="giro90" type="number" min="100" max="20000" step="10" value="1310" title="Ajústalo hasta que en el carro real la figura cierre"></div>
+        <div><label class="t" for="giro90">ms para girar 90°</label><input id="giro90" type="number" min="100" max="20000" step="10" value="1180" title="Ajústalo hasta que en el carro real la figura cierre"></div>
       </div>
       <div class="fila2" style="margin-bottom:8px;align-items:end"><div><label class="t" for="cantidad">Cantidad de movimientos</label><input id="cantidad" type="number" min="1" max="200" value="8"></div><div><label class="t" for="dur-def">Duración por defecto (ms)</label><input id="dur-def" type="number" min="100" max="60000" step="10" value="1000"></div></div>
       <div class="pasos-demo" id="pasos-demo"></div>
@@ -349,7 +349,7 @@ puntoRastro();
 
 /* --- Animación de un movimiento --- */
 const VEL = { avance: 1.4, giro: 1.2, torreta: 1.3, art: 0.9 };
-const giroCal = () => (Math.PI / 2) / (Math.max(100, +document.getElementById('giro90').value || 1310) / 1000);   // rad/s según «ms para girar 90°»       // unidades/s y rad/s
+const giroCal = () => (Math.PI / 2) / (Math.max(100, +document.getElementById('giro90').value || 1180) / 1000);   // rad/s según «ms para girar 90°»       // unidades/s y rad/s
 let accion = null;   // { cmd, fin }
 function animarComando(cmd, ms) { vehiculo.visible = true; const t = performance.now(); if (accion) avanzarHasta(t); accion = { cmd, inicio: t, fin: t + ms, ult: t }; $('#hud-cmd').textContent = bonito(cmd); }
 const clamp = (v, [a, b]) => Math.min(b, Math.max(a, v));
@@ -409,9 +409,11 @@ $('#ver-numeros').onclick = () => { marcas.visible = !marcas.visible; $('#ver-nu
 
 /* ================= Constructor de DEMO ================= */
 let pasos = [];
+// Giros de las plantillas según «ms para girar 90°» (redondeado a 10 ms)
+const G90 = (f = 1) => Math.round(Math.max(100, +document.getElementById('giro90').value || 1180) * f / 10) * 10;
 const PLANTILLAS = {
-  cuadro: () => [...Array(4)].flatMap(() => [['AVANZAR', 1200, 250], ['GIRAR_DERECHA', 1300, 250]]).concat([['DETENER', 400, 0]]),
-  zigzag: () => [['AVANZAR', 1000, 200], ['GIRAR_IZQUIERDA', 650, 200], ['AVANZAR', 1000, 200], ['GIRAR_DERECHA', 1300, 200], ['AVANZAR', 1000, 200], ['GIRAR_IZQUIERDA', 650, 200], ['AVANZAR', 1000, 200], ['DETENER', 400, 0]],
+  cuadro: () => [...Array(4)].flatMap(() => [['AVANZAR', 1200, 250], ['GIRAR_DERECHA', G90(), 250]]).concat([['DETENER', 400, 0]]),
+  zigzag: () => [['AVANZAR', 1000, 200], ['GIRAR_IZQUIERDA', G90(0.5), 200], ['AVANZAR', 1000, 200], ['GIRAR_DERECHA', G90(), 200], ['AVANZAR', 1000, 200], ['GIRAR_IZQUIERDA', G90(0.5), 200], ['AVANZAR', 1000, 200], ['DETENER', 400, 0]],
   excavar: () => [['AVANZAR', 1200, 300], ['BAJAR_BRAZO', 900, 250], ['SUBIR_BRAZO', 700, 250], ['SUBIR_BRAZO', 900, 250], ['ROTAR_IZQUIERDA', 1200, 250], ['BAJAR_BRAZO', 700, 250], ['ROTAR_DERECHA', 1200, 250], ['DETENER', 400, 0]],
   vaciar: () => [['SUBIR_BRAZO', 800, 200], ['ROTAR_DERECHA', 1000, 200], ['BAJAR_BRAZO', 800, 300], ['SUBIR_BRAZO', 800, 200], ['ROTAR_IZQUIERDA', 1000, 200], ['BAJAR_BRAZO', 800, 200], ['DETENER', 400, 0]],
   azar: () => { const m = NOMBRES.filter(n => n !== 'DETENER'); return [...Array(7)].map(() => [m[Math.floor(Math.random() * m.length)], 700 + Math.round(Math.random() * 8) * 100, 200]).concat([['DETENER', 400, 0]]); },
@@ -450,7 +452,7 @@ $('#cantidad').addEventListener('change', () => {
    El carro empieza mirando hacia arriba (+v). Si el siguiente tramo va justo en sentido contrario
    usa RETROCEDER en lugar de dar media vuelta. Unidad = mitad de «Lado: ms de avance». */
 function trazar(puntos) {
-  const g90 = Math.max(100, +$('#giro90').value || 1310), unidad = Math.max(50, (+$('#lado-ms').value || 1200) / 2);
+  const g90 = Math.max(100, +$('#giro90').value || 1180), unidad = Math.max(50, (+$('#lado-ms').value || 1200) / 2);
   const r10 = v => Math.round(v / 10) * 10, out = [];
   let rumbo = 0;                                    // 0 = arriba; positivo = a la izquierda
   const norm = a => { while (a > Math.PI) a -= 2 * Math.PI; while (a < -Math.PI) a += 2 * Math.PI; return a; };
@@ -479,7 +481,7 @@ const DENNY = [
 
 // Figuras: lados de avance y giros calculados con «ms para girar 90°» (giro exterior = 360°/lados)
 function figura(tipo) {
-  const lado = Math.max(100, +$('#lado-ms').value || 1200), g90 = Math.max(100, +$('#giro90').value || 1310);
+  const lado = Math.max(100, +$('#lado-ms').value || 1200), g90 = Math.max(100, +$('#giro90').value || 1180);
   const giro = grados => Math.round(g90 * grados / 90 / 10) * 10, P = 200, out = [];
   const poligono = (n, lados = Array(n).fill(lado)) => lados.forEach(l => out.push({ cmd: 'AVANZAR', dur: l, pausa: P }, { cmd: 'GIRAR_DERECHA', dur: giro(360 / n), pausa: P }));
   if (tipo === 'cuadrado') poligono(4);
