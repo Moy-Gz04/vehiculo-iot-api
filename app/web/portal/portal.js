@@ -440,19 +440,18 @@ function vInicio(v) {
     <div>
       <span class="eyebrow"><i data-lucide="activity" class="i"></i>2.6 Examen Tema 2 · Arquitectura y tecnologías de IoT</span>
       <h1 class="t">API Vehículo IoT</h1>
-      <p class="lead">FastAPI con programación orientada a objetos en Amazon EC2, datos en Amazon RDS con 21 Stored Procedures y un WebSocket seguro que transmite el estado y las DEMO en tiempo real.</p>
+      <p class="lead">FastAPI en EC2 · RDS · WebSocket en tiempo real.</p>
       <div class="acciones"><button class="btn pri" id="verificar-todo"><i data-lucide="shield-check" class="i"></i>Verificar los 10 criterios</button><a class="btn sec" href="#/guia/python"><i data-lucide="list-checks" class="i"></i>Abrir la guía</a></div>
     </div>
     <div class="puntaje">
       <div class="anillo"><svg viewBox="0 0 120 120"><circle class="fondo" cx="60" cy="60" r="50" fill="none" stroke-width="10"/><circle id="anillo-valor" class="valor" cx="60" cy="60" r="50" fill="none" stroke-width="10" stroke-dasharray="314" stroke-dashoffset="314"/></svg><div class="cifra"><div><b id="anillo-cifra">0</b><span>de 100</span></div></div></div>
-      <ul>${C.map(c => `<li><span class="punto" data-punto="${c.id}"></span>${esc(c.tec)}<span class="mono" style="margin-left:auto;color:var(--tenue)">${c.pts}</span></li>`).join('')}</ul>
     </div></div></section>`));
   v.append(h(`<div class="seccion estado-vivo" data-entra>${kpi('api', 'activity', 'API')}${kpi('rds', 'database', 'Amazon RDS')}${kpi('sp', 'table-2', 'Stored Procedures')}${kpi('wss', 'radio', 'WebSocket')}${kpi('https', 'lock', 'Publicación')}</div>`));
   v.append(h(`<div class="seccion grid g3" data-entra>
-    ${acceso('api', 'braces', 'API Vehículo IoT', 'Swagger UI con una guía para probar GET y POST y ver qué SP usa cada operación.')}
-    ${acceso('simulador', 'route', 'Simulador DEMO', 'Crea un vehículo con N movimientos, arma su DEMO y mírala en vivo por WebSocket.')}
-    ${acceso('control', 'gamepad-2', 'Control real', 'El control remoto del vehículo: RC clásico y Gamepad, conectado al mismo WebSocket.')}</div>`));
-  const lista = h(`<div class="seccion" data-entra><div class="seccion-cab"><div><span class="eyebrow">Guía del examen</span><h2 class="t">Lo que revisará el profesor</h2></div><span class="muted mono" style="font-size:12px">Cada criterio: comprobación con evidencia y pasos detallados</span></div><div class="criterios"></div></div>`);
+    ${acceso('api', 'braces', 'API Vehículo IoT', 'Prueba los endpoints en Swagger.')}
+    ${acceso('simulador', 'route', 'Simulador DEMO', 'Arma una DEMO y mírala en 3D.')}
+    ${acceso('control', 'gamepad-2', 'Control real', 'Maneja el carro en vivo.')}</div>`));
+  const lista = h(`<details class="seccion plegable" data-entra><summary class="seccion-cab"><div><span class="eyebrow">Guía del examen</span><h2 class="t">Lo que revisará el profesor</h2></div><span class="chip">Ver los 10 criterios<i data-lucide="chevron-down" class="i"></i></span></summary><div class="criterios"></div></details>`);
   $('.criterios', lista).innerHTML = C.map(c => `<a class="criterio" href="#/guia/${c.id}"><span class="n">${String(c.num).padStart(2, '0')}</span><div><b>${esc(c.tec)}</b><small>${esc(c.titulo)}</small></div><div class="d"><span class="chip" data-criterio-estado="${c.id}">Pendiente</span><span class="chip">${c.pts} pts</span></div></a>`).join('');
   v.append(lista);
   $('#verificar-todo', v).addEventListener('click', verificarTodo);
@@ -489,11 +488,14 @@ function marco(src, titulo, alto) {
     <a class="btn chico sec" href="${src}" target="_blank" rel="noopener"><i data-lucide="external-link" class="i"></i>Aparte</a></div>
     <iframe src="${src}" title="${esc(titulo)}" style="height:${alto}"></iframe></div>`);
 }
-function introGuia(titulo, pasos, id) {
-  const oculto = (() => { try { return localStorage.getItem('portal.intro.' + id) === '0'; } catch { return false; } })();
-  const el = h(`<div class="intro" data-entra><div class="intro-cab"><b><i data-lucide="compass" class="i" style="vertical-align:-3px;margin-right:6px"></i>${esc(titulo)}</b><button class="btn chico sec" data-plegar>${oculto ? 'Mostrar guía' : 'Ocultar guía'}</button></div>
+// Guía desplegable: se abre y se cierra tocando la barra del título. `cerrada` = cómo empieza si nunca se ha tocado.
+function introGuia(titulo, pasos, id, cerrada = false) {
+  const oculto = (() => { try { const g = localStorage.getItem('portal.intro.' + id); return g === null ? cerrada : g === '0'; } catch { return cerrada; } })();
+  const el = h(`<div class="intro" data-entra><div class="intro-cab" data-plegar role="button" tabindex="0" aria-expanded="${!oculto}"><b><i data-lucide="compass" class="i" style="vertical-align:-3px;margin-right:6px"></i>${esc(titulo)}</b><span class="btn chico sec intro-flecha">${oculto ? 'Mostrar guía' : 'Ocultar guía'}<i data-lucide="chevron-down" class="i"></i></span></div>
     <ol ${oculto ? 'hidden' : ''}>${pasos.map(([t, p], i) => `<li><span class="n">${i + 1}</span><div><b>${esc(t)}</b>${esc(p)}</div></li>`).join('')}</ol></div>`);
-  $('[data-plegar]', el).onclick = () => { const ol = $('ol', el); ol.hidden = !ol.hidden; $('[data-plegar]', el).textContent = ol.hidden ? 'Mostrar guía' : 'Ocultar guía'; try { localStorage.setItem('portal.intro.' + id, ol.hidden ? '0' : '1'); } catch {} };
+  const cab = $('[data-plegar]', el);
+  const plegar = () => { const ol = $('ol', el); ol.hidden = !ol.hidden; cab.setAttribute('aria-expanded', String(!ol.hidden)); $('.intro-flecha', el).firstChild.textContent = ol.hidden ? 'Mostrar guía' : 'Ocultar guía'; try { localStorage.setItem('portal.intro.' + id, ol.hidden ? '0' : '1'); } catch {} };
+  cab.onclick = plegar; cab.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); plegar(); } };
   return el;
 }
 const guiaSwagger = () => introGuia('Cómo usar Swagger UI', [
@@ -502,7 +504,7 @@ const guiaSwagger = () => introGuia('Cómo usar Swagger UI', [
   ['Try it out', 'Llena los parámetros (id_vehiculo = 1) y, si es POST, el Request body.'],
   ['Execute', 'Abajo aparecen el comando curl, la URL, el código y el JSON de respuesta.'],
 ], 'swagger');
-function cabVista(eyebrow, titulo, texto, extra = '') { return h(`<div class="seccion-cab" data-entra style="margin-bottom:14px"><div><span class="eyebrow">${eyebrow}</span><h1 class="t" style="margin-bottom:6px">${titulo}</h1><p class="lead">${texto}</p></div>${extra}</div>`); }
+function cabVista(eyebrow, titulo, texto, extra = '') { return h(`<div class="seccion-cab" data-entra style="margin-bottom:14px"><div><span class="eyebrow">${eyebrow}</span><h1 class="t" style="margin-bottom:6px">${titulo}</h1>${texto ? `<p class="lead">${texto}</p>` : ''}</div>${extra}</div>`); }
 function vApi(v) {
   v.classList.add('ancha');
   v.append(cabVista('Swagger UI · OpenAPI', 'API Vehículo IoT', 'Documentación generada por FastAPI. Sigue la guía para probar las operaciones; usa Ampliar para verla a pantalla completa.'));
@@ -510,13 +512,13 @@ function vApi(v) {
 }
 function vSimulador(v) {
   v.classList.add('ancha');
-  v.append(cabVista('Simulador · WebSocket', 'Simulador DEMO', 'Crea un vehículo con sus comandos, arma una DEMO de N movimientos y mírala llegar por WebSocket.'));
+  v.append(cabVista('Simulador · WebSocket', 'Simulador DEMO', ''));
   v.append(introGuia('Cómo usar el simulador', [
     ['Clave', 'Se toma la X-API-Key guardada en este navegador (botón Clave de arriba).'],
     ['Escenario', 'Escribe el nombre del carro, cuántos movimientos (N), su duración y pausa.'],
     ['Crear y ejecutar', 'El simulador crea el vehículo, sus 5 comandos y la DEMO con N pasos, abre el WSS y la inicia.'],
     ['Comprueba', 'Mira cada evento llegar y el carrito moverse; al final verifica que el historial no cambió.'],
-  ], 'simulador'), marco('/control/simulador.html?v=3d', 'Simulador DEMO', 'calc(100vh - 200px)'));
+  ], 'simulador-v2', true), marco('/control/simulador.html?v=4', 'Simulador DEMO', 'calc(100vh - 200px)'));
 }
 function vControl(v) {
   v.classList.add('ancha');

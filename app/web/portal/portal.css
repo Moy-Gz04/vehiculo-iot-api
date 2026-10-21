@@ -291,6 +291,10 @@ body.con-enfoque{overflow:hidden}
 /* ---------------- Guía de entrada ---------------- */
 .intro{border:1px solid var(--linea);border-radius:18px;background:linear-gradient(180deg,var(--acentoSuave),transparent 140%),var(--sup);padding:16px 18px;margin-bottom:14px}
 .intro-cab{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.intro-cab[data-plegar]{cursor:pointer;user-select:none}
+.intro-flecha{display:inline-flex;align-items:center;gap:6px}
+.intro-flecha .i{width:14px;height:14px;transition:transform .2s}
+.intro-cab[aria-expanded="true"] .intro-flecha .i{transform:rotate(180deg)}
 .intro-cab b{font:700 15px var(--f-tit)}
 .intro ol{list-style:none;margin:12px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px}
 .intro li{display:grid;grid-template-columns:26px 1fr;gap:10px;padding:10px 12px;border-radius:12px;background:var(--sup);border:1px solid var(--linea);font-size:13px;color:var(--suave);transition:border-color .25s,background .25s}
@@ -405,3 +409,11 @@ h2.t,h3.t{font-family:var(--f-tit)}
 .pie-pagina,.pie-lado{border-top-color:var(--linea)}
 .marco iframe{background:var(--bg)}
 ::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:var(--linea2);border-radius:8px}::-webkit-scrollbar-track{background:transparent}
+
+/* Inicio más ligero: los criterios del examen van en una lista desplegable */
+details.plegable > summary { list-style: none; cursor: pointer; user-select: none; }
+details.plegable > summary::-webkit-details-marker { display: none; }
+details.plegable > summary .chip { display: inline-flex; align-items: center; gap: 6px; }
+details.plegable > summary .chip .i { width: 14px; height: 14px; transition: transform .2s; }
+details.plegable[open] > summary .chip .i { transform: rotate(180deg); }
+details.plegable:not([open]) > summary { margin-bottom: 0; }

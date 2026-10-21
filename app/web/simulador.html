@@ -97,7 +97,6 @@
 <body>
 <div class="cab">
   <h1>Simulador DEMO 3D · Excavadora 970</h1>
-  <p class="sub">Arma tu propia DEMO paso por paso, previsualízala en 3D y ejecútala contra la API real: cada movimiento llega por WebSocket y, si eliges el carro real, la ESP32 lo ejecuta al mismo tiempo. Abajo se ven todas las consultas que se hicieron.</p>
 </div>
 <div class="grid">
   <div style="display:grid;gap:14px;align-content:start">
@@ -106,30 +105,33 @@
       <label class="t" for="clave">X-API-Key</label>
       <input id="clave" type="password" autocomplete="off" required>
       <label class="real" for="real"><input id="real" type="checkbox" checked>
-        <span><b>Ejecutar también en el carro real</b>La DEMO se arma en el vehículo 1, el que escucha la ESP32: se mueve en 3D y en el carro al mismo tiempo.</span></label>
-      <div id="campo-nombre"><label class="t" for="nombre">Nombre del vehículo simulado</label><input id="nombre" value="Excavadora simulada" maxlength="60"></div>
+        <span><b>Ejecutar también en el carro real</b></span></label>
+      <div id="campo-nombre"><label class="t" for="nombre" id="lbl-nombre">Nombre del carro</label><input id="nombre" value="" maxlength="60" placeholder="Ej. Excavadora de Moy"></div>
 
       <h2 style="margin-top:16px">Tu DEMO <span class="der chip" id="n-pasos">0 movimientos</span></h2>
-      <div class="plantillas">
-        <button type="button" class="chico" data-plantilla="cuadro">Cuadro</button>
-        <button type="button" class="chico" data-plantilla="zigzag">Zigzag</button>
-        <button type="button" class="chico" data-plantilla="excavar">Excavar</button>
-        <button type="button" class="chico" data-plantilla="azar">Al azar</button>
-        <button type="button" class="chico" data-plantilla="vaciar">Vaciar</button>
-      </div>
-      <label class="t">Figuras (mini demos)</label>
-      <div class="plantillas">
-        <button type="button" class="chico" data-figura="cuadrado">Cuadrado</button>
-        <button type="button" class="chico" data-figura="rectangulo">Rectángulo</button>
-        <button type="button" class="chico" data-figura="triangulo">Triángulo</button>
-        <button type="button" class="chico" data-figura="pentagono">Pentágono</button>
-        <button type="button" class="chico" data-figura="hexagono">Hexágono</button>
-        <button type="button" class="chico" data-figura="octagono">Octágono</button>
-        <button type="button" class="chico" data-figura="estrella">Estrella</button>
-        <button type="button" class="chico" data-figura="circulo">Círculo</button>
-        <button type="button" class="chico" data-figura="corazon">Corazón</button>
-        <button type="button" class="chico" data-figura="denny">DENNY + corazón</button>
-      </div>
+      <label class="t" for="plantilla">Plantillas y figuras</label>
+      <select id="plantilla" style="margin-bottom:8px">
+        <option value="">Elige una plantilla o figura…</option>
+        <optgroup label="Plantillas">
+          <option value="p:cuadro">Cuadro</option>
+          <option value="p:zigzag">Zigzag</option>
+          <option value="p:excavar">Excavar</option>
+          <option value="p:azar">Al azar</option>
+          <option value="p:vaciar">Vaciar</option>
+        </optgroup>
+        <optgroup label="Figuras (mini demos)">
+          <option value="f:cuadrado">Cuadrado</option>
+          <option value="f:rectangulo">Rectángulo</option>
+          <option value="f:triangulo">Triángulo</option>
+          <option value="f:pentagono">Pentágono</option>
+          <option value="f:hexagono">Hexágono</option>
+          <option value="f:octagono">Octágono</option>
+          <option value="f:estrella">Estrella</option>
+          <option value="f:circulo">Círculo</option>
+          <option value="f:corazon">Corazón</option>
+          <option value="f:denny">DENNY + corazón</option>
+        </optgroup>
+      </select>
       <div class="fila2" style="margin-bottom:8px">
         <div><label class="t" for="lado-ms">Lado: ms de avance</label><input id="lado-ms" type="number" min="100" max="20000" step="10" value="1200"></div>
         <div><label class="t" for="giro90">ms para girar 90°</label><input id="giro90" type="number" min="100" max="20000" step="10" value="1310" title="Ajústalo hasta que en el carro real la figura cierre"></div>
@@ -408,9 +410,9 @@ $('#ver-numeros').onclick = () => { marcas.visible = !marcas.visible; $('#ver-nu
 /* ================= Constructor de DEMO ================= */
 let pasos = [];
 const PLANTILLAS = {
-  cuadro: () => [...Array(4)].flatMap(() => [['AVANZAR', 1200, 250], ['GIRAR_DERECHA', 1300, 250]]).concat([['DETENER', 400, 0]]),
+  cuadro: () => [...Array(4)].flatMap(() => [['AVANZAR', 1200, 300], ['GIRAR_DERECHA', 1300, 300]]).concat([['DETENER', 400, 0]]),
   zigzag: () => [['AVANZAR', 1000, 200], ['GIRAR_IZQUIERDA', 650, 200], ['AVANZAR', 1000, 200], ['GIRAR_DERECHA', 1300, 200], ['AVANZAR', 1000, 200], ['GIRAR_IZQUIERDA', 650, 200], ['AVANZAR', 1000, 200], ['DETENER', 400, 0]],
-  excavar: () => [['AVANZAR', 1200, 300], ['BAJAR_BRAZO', 900, 250], ['SUBIR_BRAZO', 700, 250], ['SUBIR_BRAZO', 900, 250], ['ROTAR_IZQUIERDA', 1200, 250], ['BAJAR_BRAZO', 700, 250], ['ROTAR_DERECHA', 1200, 250], ['DETENER', 400, 0]],
+  excavar: () => [['AVANZAR', 1200, 300], ['BAJAR_BRAZO', 900, 300], ['SUBIR_BRAZO', 700, 300], ['SUBIR_BRAZO', 900, 300], ['ROTAR_IZQUIERDA', 1200, 300], ['BAJAR_BRAZO', 700, 300], ['ROTAR_DERECHA', 1200, 300], ['DETENER', 400, 0]],
   vaciar: () => [['SUBIR_BRAZO', 800, 200], ['ROTAR_DERECHA', 1000, 200], ['BAJAR_BRAZO', 800, 300], ['SUBIR_BRAZO', 800, 200], ['ROTAR_IZQUIERDA', 1000, 200], ['BAJAR_BRAZO', 800, 200], ['DETENER', 400, 0]],
   azar: () => { const m = NOMBRES.filter(n => n !== 'DETENER'); return [...Array(7)].map(() => [m[Math.floor(Math.random() * m.length)], 700 + Math.round(Math.random() * 8) * 100, 200]).concat([['DETENER', 400, 0]]); },
 };
@@ -441,7 +443,7 @@ $('#pasos-demo').addEventListener('click', e => {
 $('#cantidad').addEventListener('change', () => {
   const n = Math.max(1, Math.min(200, Math.round(+$('#cantidad').value || 1)));
   const dur = Math.max(100, +$('#dur-def').value || 1000), ciclo = ['AVANZAR', 'GIRAR_DERECHA'];
-  while (pasos.length < n) pasos.push({ cmd: ciclo[pasos.length % 2], dur, pausa: 250 });
+  while (pasos.length < n) pasos.push({ cmd: ciclo[pasos.length % 2], dur, pausa: 300 });
   pasos.length = n; $('#cantidad').value = n; pintarPasos();
 });
 /* Trazador: convierte una lista de puntos (u = derecha, v = arriba) en giros y avances.
@@ -493,9 +495,13 @@ function figura(tipo) {
   out.push({ cmd: 'DETENER', dur: 400, pausa: 0 });
   return out;
 }
-document.querySelectorAll('[data-figura]').forEach(b => b.onclick = () => { pasos = figura(b.dataset.figura); pintarPasos(); });
-$('#agregar').onclick = () => { if (pasos.length >= 200) return; const ult = pasos.at(-1); pasos.push({ cmd: ult && ult.cmd === 'AVANZAR' ? 'GIRAR_DERECHA' : 'AVANZAR', dur: 1000, pausa: 250 }); pintarPasos(); $('#pasos-demo').scrollTop = 1e6; };
-document.querySelectorAll('[data-plantilla]').forEach(b => b.onclick = () => { pasos = PLANTILLAS[b.dataset.plantilla]().map(([cmd, dur, pausa]) => ({ cmd, dur, pausa })); pintarPasos(); });
+// Lista de plantillas y figuras: al elegir una, se arma la DEMO
+$('#plantilla').addEventListener('change', e => {
+  const [tipo, clave] = e.target.value.split(':'); if (!clave) return;
+  pasos = tipo === 'f' ? figura(clave) : PLANTILLAS[clave]().map(([cmd, dur, pausa]) => ({ cmd, dur, pausa }));
+  pintarPasos();
+});
+$('#agregar').onclick = () => { if (pasos.length >= 200) return; const ult = pasos.at(-1); pasos.push({ cmd: ult && ult.cmd === 'AVANZAR' ? 'GIRAR_DERECHA' : 'AVANZAR', dur: 1000, pausa: 300 }); pintarPasos(); $('#pasos-demo').scrollTop = 1e6; };
 pasos = PLANTILLAS.excavar().map(([cmd, dur, pausa]) => ({ cmd, dur, pausa })); pintarPasos();
 const marcarPaso = (i, clase) => { document.querySelectorAll('.paso').forEach((el, k) => { el.classList.toggle('activo', k === i && clase === 'activo'); if (k < i) el.classList.add('hecho'); }); };
 const limpiarPasos = () => document.querySelectorAll('.paso').forEach(el => el.classList.remove('activo', 'hecho'));
@@ -578,8 +584,10 @@ $('#previa').onclick = async () => {
 };
 
 /* ================= Flujo completo contra la API ================= */
-function actualizarModo() { const r = $('#real').checked; $('#campo-nombre').hidden = r; $('#modo').textContent = r ? 'Simulación + carro real (ESP32)' : 'Solo simulación'; $('#modo').className = 'chip' + (r ? ' on' : ''); }
+function actualizarModo() { const r = $('#real').checked; $('#lbl-nombre').textContent = r ? 'Nombre del carro real (vehículo 1)' : 'Nombre del nuevo vehículo simulado'; $('#modo').textContent = r ? 'Simulación + carro real (ESP32)' : 'Solo simulación'; $('#modo').className = 'chip' + (r ? ' on' : ''); }
 $('#real').addEventListener('change', actualizarModo); actualizarModo();
+// Al abrir, el campo muestra el nombre actual del carro real
+fetch(API + '/vehiculos/1').then(r => r.ok ? r.json() : null).then(v => { if (v && v.nombre && !$('#nombre').value) $('#nombre').value = v.nombre; }).catch(() => {});
 
 $('#form').addEventListener('submit', async e => {
   e.preventDefault();
@@ -599,13 +607,23 @@ $('#form').addEventListener('submit', async e => {
       const faltan = necesarios.filter(n => !ids[n]);
       if (faltan.length) throw new Error(`Al vehículo 1 le faltan los comandos: ${faltan.join(', ')}`);
       p.ok(`vehículo 1 · ${cmds.length} comandos`); $('#hud-veh').textContent = 'Vehículo 1 · carro real';
+      const nom = $('#nombre').value.trim().slice(0, 60);
+      if (nom) {                                   // ponerle nombre al carro real
+        const v1 = await api('GET', '/vehiculos/1');
+        if (v1.nombre !== nom) {
+          p = pasoLista('Nombre del carro', 'POST /vehiculos/1/actualizar');
+          await api('POST', '/vehiculos/1/actualizar', { nombre: nom, modelo: v1.modelo, descripcion: v1.descripcion, microcontrolador: v1.microcontrolador, activo: v1.activo !== false });
+          p.ok(nom);
+        }
+        $('#hud-veh').textContent = `${nom} · carro real`;
+      }
       p = pasoLista('Preparar la DEMO del simulador', 'POST /demos');
       const previas = (await api('GET', '/vehiculos/1/demos')).filter(x => x.nombre === 'DEMO del simulador');
       for (const x of previas) await api('POST', `/vehiculos/1/demos/${x.id_demo}/eliminar`);
       d = await api('POST', '/vehiculos/1/demos', { nombre: 'DEMO del simulador', descripcion: `${pasos.length} movimientos armados en el simulador 3D` });
     } else {
       p = pasoLista('Crear vehículo', 'POST /vehiculos');
-      const v = await api('POST', '/vehiculos', { nombre: `${($('#nombre').value.trim() || 'Excavadora simulada').slice(0, 60)} ${new Date().toLocaleTimeString('es-MX', { hour12: false })}`, modelo: '970 TOP', descripcion: 'Excavadora creada por el simulador 3D', microcontrolador: 'ESP32' });
+      const v = await api('POST', '/vehiculos', { nombre: ($('#nombre').value.trim() || `Excavadora simulada ${new Date().toLocaleTimeString('es-MX', { hour12: false })}`).slice(0, 60), modelo: '970 TOP', descripcion: 'Excavadora creada por el simulador 3D', microcontrolador: 'ESP32' });
       idV = idDe(v, 'id_vehiculo'); p.ok(`id ${idV}`); $('#hud-veh').textContent = `Vehículo ${idV} · simulado`;
       p = pasoLista(`Registrar ${necesarios.length} comandos`, 'POST /comandos');
       for (const [nombre, codigo, descripcion] of CATALOGO.filter(c => necesarios.includes(c[0]))) {
