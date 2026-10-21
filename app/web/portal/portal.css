@@ -291,6 +291,7 @@ body.con-enfoque{overflow:hidden}
 /* ---------------- Guía de entrada ---------------- */
 .intro{border:1px solid var(--linea);border-radius:18px;background:linear-gradient(180deg,var(--acentoSuave),transparent 140%),var(--sup);padding:16px 18px;margin-bottom:14px}
 .intro-cab{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.intro ol[hidden]{display:none}   /* sin esto, display:grid le gana a hidden y la guía no se oculta */
 .intro-cab[data-plegar]{cursor:pointer;user-select:none}
 .intro-flecha{display:inline-flex;align-items:center;gap:6px}
 .intro-flecha .i{width:14px;height:14px;transition:transform .2s}
