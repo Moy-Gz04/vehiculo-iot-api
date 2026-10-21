@@ -160,7 +160,7 @@
     const s = { nombre, boton, timer: null };
     st.sostenido = s;
     s.orden = enviar(nombre, 'mantener');      // promesa: el "soltar" se manda después de esta orden
-    s.timer = setInterval(() => { if (st.sostenido === s) avisoRapido('mantener'); }, 300);
+    s.timer = setInterval(() => { if (st.sostenido === s) avisoRapido('mantener'); }, 250);
   }
   function soltarSostenido() {
     const s = st.sostenido; if (!s) return;

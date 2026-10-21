@@ -410,9 +410,9 @@ $('#ver-numeros').onclick = () => { marcas.visible = !marcas.visible; $('#ver-nu
 /* ================= Constructor de DEMO ================= */
 let pasos = [];
 const PLANTILLAS = {
-  cuadro: () => [...Array(4)].flatMap(() => [['AVANZAR', 1200, 300], ['GIRAR_DERECHA', 1300, 300]]).concat([['DETENER', 400, 0]]),
+  cuadro: () => [...Array(4)].flatMap(() => [['AVANZAR', 1200, 250], ['GIRAR_DERECHA', 1300, 250]]).concat([['DETENER', 400, 0]]),
   zigzag: () => [['AVANZAR', 1000, 200], ['GIRAR_IZQUIERDA', 650, 200], ['AVANZAR', 1000, 200], ['GIRAR_DERECHA', 1300, 200], ['AVANZAR', 1000, 200], ['GIRAR_IZQUIERDA', 650, 200], ['AVANZAR', 1000, 200], ['DETENER', 400, 0]],
-  excavar: () => [['AVANZAR', 1200, 300], ['BAJAR_BRAZO', 900, 300], ['SUBIR_BRAZO', 700, 300], ['SUBIR_BRAZO', 900, 300], ['ROTAR_IZQUIERDA', 1200, 300], ['BAJAR_BRAZO', 700, 300], ['ROTAR_DERECHA', 1200, 300], ['DETENER', 400, 0]],
+  excavar: () => [['AVANZAR', 1200, 300], ['BAJAR_BRAZO', 900, 250], ['SUBIR_BRAZO', 700, 250], ['SUBIR_BRAZO', 900, 250], ['ROTAR_IZQUIERDA', 1200, 250], ['BAJAR_BRAZO', 700, 250], ['ROTAR_DERECHA', 1200, 250], ['DETENER', 400, 0]],
   vaciar: () => [['SUBIR_BRAZO', 800, 200], ['ROTAR_DERECHA', 1000, 200], ['BAJAR_BRAZO', 800, 300], ['SUBIR_BRAZO', 800, 200], ['ROTAR_IZQUIERDA', 1000, 200], ['BAJAR_BRAZO', 800, 200], ['DETENER', 400, 0]],
   azar: () => { const m = NOMBRES.filter(n => n !== 'DETENER'); return [...Array(7)].map(() => [m[Math.floor(Math.random() * m.length)], 700 + Math.round(Math.random() * 8) * 100, 200]).concat([['DETENER', 400, 0]]); },
 };
@@ -443,7 +443,7 @@ $('#pasos-demo').addEventListener('click', e => {
 $('#cantidad').addEventListener('change', () => {
   const n = Math.max(1, Math.min(200, Math.round(+$('#cantidad').value || 1)));
   const dur = Math.max(100, +$('#dur-def').value || 1000), ciclo = ['AVANZAR', 'GIRAR_DERECHA'];
-  while (pasos.length < n) pasos.push({ cmd: ciclo[pasos.length % 2], dur, pausa: 300 });
+  while (pasos.length < n) pasos.push({ cmd: ciclo[pasos.length % 2], dur, pausa: 250 });
   pasos.length = n; $('#cantidad').value = n; pintarPasos();
 });
 /* Trazador: convierte una lista de puntos (u = derecha, v = arriba) en giros y avances.
@@ -501,7 +501,7 @@ $('#plantilla').addEventListener('change', e => {
   pasos = tipo === 'f' ? figura(clave) : PLANTILLAS[clave]().map(([cmd, dur, pausa]) => ({ cmd, dur, pausa }));
   pintarPasos();
 });
-$('#agregar').onclick = () => { if (pasos.length >= 200) return; const ult = pasos.at(-1); pasos.push({ cmd: ult && ult.cmd === 'AVANZAR' ? 'GIRAR_DERECHA' : 'AVANZAR', dur: 1000, pausa: 300 }); pintarPasos(); $('#pasos-demo').scrollTop = 1e6; };
+$('#agregar').onclick = () => { if (pasos.length >= 200) return; const ult = pasos.at(-1); pasos.push({ cmd: ult && ult.cmd === 'AVANZAR' ? 'GIRAR_DERECHA' : 'AVANZAR', dur: 1000, pausa: 250 }); pintarPasos(); $('#pasos-demo').scrollTop = 1e6; };
 pasos = PLANTILLAS.excavar().map(([cmd, dur, pausa]) => ({ cmd, dur, pausa })); pintarPasos();
 const marcarPaso = (i, clase) => { document.querySelectorAll('.paso').forEach((el, k) => { el.classList.toggle('activo', k === i && clase === 'activo'); if (k < i) el.classList.add('hecho'); }); };
 const limpiarPasos = () => document.querySelectorAll('.paso').forEach(el => el.classList.remove('activo', 'hecho'));
