@@ -428,7 +428,7 @@ body.demo-aleatoria .lcd-cmd { color: #fff; text-shadow: 0 0 10px var(--azul-cla
     padding: 6px max(10px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); }
 
   body #pantalla-control { padding: 0; }
-  body .ayuda, body .mini-botones, body .marca-control, body .antena { display: none !important; }
+  body .ayuda, body .marca-control, body .antena { display: none !important; }
   body .barra { position: static; transform: none; top: max(4px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); z-index: 5; width: auto; flex-wrap: nowrap; gap: 6px; }
   body .chip { padding: 4px 10px; font-size: 12px; background: rgba(5, 7, 12, .7); }
   body .chip:not(.chip-select) span { display: none; }
@@ -462,7 +462,7 @@ body.demo-aleatoria .lcd-cmd { color: #fff; text-shadow: 0 0 10px var(--azul-cla
     padding: 6px max(10px, env(safe-area-inset-bottom)) 6px max(10px, env(safe-area-inset-top)); }
 
   body[data-orient="h"] #pantalla-control { padding: 0; }
-  body[data-orient="h"] .ayuda, body[data-orient="h"] .mini-botones, body[data-orient="h"] .marca-control, body[data-orient="h"] .antena { display: none !important; }
+  body[data-orient="h"] .ayuda, body[data-orient="h"] .marca-control, body[data-orient="h"] .antena { display: none !important; }
   body[data-orient="h"] .barra { position: static; transform: none; top: max(4px, 0px); left: 50%; transform: translateX(-50%); z-index: 5; width: auto; flex-wrap: nowrap; gap: 6px; }
   body[data-orient="h"] .chip { padding: 4px 10px; font-size: 12px; background: rgba(5, 7, 12, .7); }
   body[data-orient="h"] .chip:not(.chip-select) span { display: none; }
@@ -500,4 +500,26 @@ body.demo-aleatoria .lcd-cmd { color: #fff; text-shadow: 0 0 10px var(--azul-cla
 @media (orientation: portrait) and (max-width: 500px) {
   body[data-orient="h"] #pantalla-control .escena { gap: 10px !important; padding: 12px max(28px, calc(env(safe-area-inset-bottom) + 16px)) 14px max(28px, calc(env(safe-area-inset-top) + 16px)) !important; }
   body[data-orient="h"] .remoto { width: min(100%, 760px) !important; }
+}
+
+/* Horizontal con margen amplio en los extremos (arriba y abajo del teléfono) y DEMO/LOG junto al ALTO */
+@media (orientation: landscape) and (max-height: 500px) {
+  .escena { padding-left: max(10vw, calc(env(safe-area-inset-left) + 24px)) !important; padding-right: max(10vw, calc(env(safe-area-inset-right) + 24px)) !important; }
+  .remoto { width: min(100%, 640px) !important; }
+  .grupo-centro { gap: 14px !important; }
+  .mini-botones { display: flex !important; flex-direction: column; gap: 8px; }
+  .pildora { padding: 6px 12px; font-size: 10px; }
+}
+@media (orientation: portrait) and (max-width: 500px) {
+  body[data-orient="h"] #pantalla-control .escena { padding-left: 11vh !important; padding-right: 11vh !important; }
+  body[data-orient="h"] .remoto { width: min(100%, 640px) !important; }
+  body[data-orient="h"] .grupo-centro { gap: 14px !important; }
+  body[data-orient="h"] .mini-botones { display: flex !important; flex-direction: column; gap: 8px; }
+  body[data-orient="h"] .pildora { padding: 6px 12px; font-size: 10px; }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  .escena { padding-left: max(6vw, calc(env(safe-area-inset-left) + 20px)) !important; padding-right: max(6vw, calc(env(safe-area-inset-right) + 20px)) !important; }
+  .remoto { width: min(100%, 720px) !important; }
+  .cruz { --tam: min(calc((100dvh - 170px) / 3), 60px) !important; }
+  .lcd { min-width: 230px; }
 }
