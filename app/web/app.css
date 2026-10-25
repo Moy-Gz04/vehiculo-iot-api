@@ -419,60 +419,77 @@ body.demo-aleatoria .lcd-cmd { color: #fff; text-shadow: 0 0 10px var(--azul-cla
 }
 
 /* =========================================================
-   iPhone 15 en HORIZONTAL (acostado, 852 × 393) y girado por CSS:
-   cruces a los lados, al centro LCD · ALTO · funciones; nada se corta
+   iPhone 15 en HORIZONTAL (acostado, o girado con el botón): como un control de consola.
+   Cruces grandes a los lados; al centro solo pantalla, ALTO y las 4 funciones.
+   DEMO/LOG de rutinas viven en "Menú" (aquí sobraban y había dos botones DEMO).
    ========================================================= */
 @media (orientation: landscape) and (max-height: 500px) {
-  #pantalla-control { padding: 0; }
-  .escena {
-    min-height: 100dvh; justify-content: flex-start; gap: 4px;
-    padding: 6px max(12px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
-  }
-  .barra { flex-wrap: nowrap; gap: 6px; }
-  .chip { padding: 5px 11px; font-size: 12px; }
-  body[data-control="rc"] .remoto { margin-top: 14px; }
-  body[data-control="rc"] .antena { height: 30px; top: -24px; left: 40px; }
-  .carcasa {
-    grid-template-columns: 1fr minmax(200px, 1.15fr) 1fr !important;
+  .escena { min-height: 100dvh; justify-content: center; gap: 0; position: relative;
+    padding: 6px max(10px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); }
+
+  body #pantalla-control { padding: 0; }
+  body .ayuda, body .mini-botones, body .marca-control, body .antena { display: none !important; }
+  body .barra { position: absolute; top: max(4px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); z-index: 5; width: auto; flex-wrap: nowrap; gap: 6px; }
+  body .chip { padding: 4px 10px; font-size: 12px; background: rgba(5, 7, 12, .7); }
+  body .chip:not(.chip-select) span { display: none; }
+  body .chip svg { width: 15px; height: 15px; }
+  body .chip-select select { max-width: 130px; font-size: 12px; }
+  body .remoto { width: 100%; margin-top: 0 !important; }
+  body .carcasa {
+    grid-template-columns: auto minmax(0, 1fr) auto !important;
+    grid-template-rows: auto auto auto !important;
     grid-template-areas: "traccion lcd brazo" "traccion centro brazo" "traccion funciones brazo" !important;
-    padding: 22px 16px 12px !important; gap: 6px 12px !important; border-radius: 30px !important;
+    align-content: center; column-gap: clamp(14px, 4vw, 40px) !important; row-gap: 8px !important;
+    padding: 38px clamp(16px, 3.5vw, 34px) 12px !important; border-radius: 34px !important;
+    min-height: calc(100dvh - 12px);
   }
-  .cruz { --tam: min(calc((100dvh - 120px) / 3), 64px) !important; }
-  .lcd { padding: 6px 10px 5px; }
-  .lcd-cmd { font-size: 15px; margin: 2px 0; }
-  .lcd-barra { margin-top: 4px; }
-  .grupo { gap: 4px; }
-  .grupo-centro { display: flex; align-items: center; justify-content: center; gap: 14px; }
-  .mini-botones { flex-direction: column; gap: 6px; }
-  .alto { width: min(calc(100dvh - 300px), 76px) !important; min-width: 58px; font-size: 14px; }
-  .funciones { margin-top: 0; gap: 10px; }
-  .funcion { width: 48px; height: 48px; }
-  .funcion svg { width: 17px; height: 17px; }
-  .funcion em { font-size: 8px; }
-  .marca-control { top: 7px; font-size: 9px; }
+  body .grupo { gap: 4px; }
+  body .grupo-titulo { font-size: 9px; letter-spacing: .18em; }
+  body .cruz { --tam: min(calc((100dvh - 96px) / 3), 68px) !important; }
+  body .lcd { justify-self: center; width: min(100%, 250px); padding: 5px 12px 4px; border-radius: 10px; }
+  body .lcd .lcd-fila:last-of-type, body .lcd-barra { display: none; }
+  body .lcd-cmd { font-size: 15px; margin: 1px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  body .lcd-fila { font-size: 9.5px; }
+  body .grupo-centro { display: flex; justify-content: center; }
+  body .alto { width: min(calc(100dvh - 220px), 84px) !important; min-width: 58px; font-size: 14px; }
+  body .funciones { margin: 0; gap: 10px; flex-wrap: nowrap; justify-content: center; }
+  body .funcion { width: 42px; height: 42px; flex: none; }
+  body .funcion svg { width: 16px; height: 16px; }
+  body .funcion em { display: none; }
+  body .led { top: 12px; right: 16px; width: 9px; height: 9px; }
 }
 @media (orientation: portrait) and (max-width: 500px) {
-  body[data-orient="h"] #pantalla-control .escena {
-    height: 100vw; gap: 4px;
-    padding: max(6px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) 6px max(12px, env(safe-area-inset-top));
-  }
-  body[data-orient="h"][data-control="rc"] .remoto { margin-top: 14px; }
-  body[data-orient="h"][data-control="rc"] .antena { height: 30px; top: -24px; left: 40px; }
+  body[data-orient="h"] #pantalla-control .escena { height: 100vw; justify-content: center; gap: 0;
+    padding: 6px max(10px, env(safe-area-inset-bottom)) 6px max(10px, env(safe-area-inset-top)); }
+
+  body[data-orient="h"] #pantalla-control { padding: 0; }
+  body[data-orient="h"] .ayuda, body[data-orient="h"] .mini-botones, body[data-orient="h"] .marca-control, body[data-orient="h"] .antena { display: none !important; }
+  body[data-orient="h"] .barra { position: absolute; top: max(4px, 0px); left: 50%; transform: translateX(-50%); z-index: 5; width: auto; flex-wrap: nowrap; gap: 6px; }
+  body[data-orient="h"] .chip { padding: 4px 10px; font-size: 12px; background: rgba(5, 7, 12, .7); }
+  body[data-orient="h"] .chip:not(.chip-select) span { display: none; }
+  body[data-orient="h"] .chip svg { width: 15px; height: 15px; }
+  body[data-orient="h"] .chip-select select { max-width: 130px; font-size: 12px; }
+  body[data-orient="h"] .remoto { width: 100%; margin-top: 0 !important; }
   body[data-orient="h"] .carcasa {
-    grid-template-columns: 1fr minmax(200px, 1.15fr) 1fr;
-    grid-template-areas: "traccion lcd brazo" "traccion centro brazo" "traccion funciones brazo";
-    padding: 22px 12px 12px; gap: 6px 8px; border-radius: 30px !important; grid-template-columns: auto 1fr auto;
+    grid-template-columns: auto minmax(0, 1fr) auto !important;
+    grid-template-rows: auto auto auto !important;
+    grid-template-areas: "traccion lcd brazo" "traccion centro brazo" "traccion funciones brazo" !important;
+    align-content: center; column-gap: clamp(14px, 4vw, 40px) !important; row-gap: 8px !important;
+    padding: 38px clamp(16px, 3.5vw, 34px) 12px !important; border-radius: 34px !important;
+    min-height: calc(100vw - 12px);
   }
-  body[data-orient="h"] .cruz { --tam: min(calc((100vw - 120px) / 3), 56px); }
-  body[data-orient="h"] .lcd { padding: 6px 10px 5px; }
-  body[data-orient="h"] .lcd-cmd { font-size: 15px; margin: 2px 0; }
   body[data-orient="h"] .grupo { gap: 4px; }
-  body[data-orient="h"] .grupo-centro { display: flex; align-items: center; justify-content: center; gap: 14px; }
-  body[data-orient="h"] .mini-botones { flex-direction: column; gap: 6px; }
-  body[data-orient="h"] .alto { width: min(calc(100vw - 300px), 76px); min-width: 58px; font-size: 14px; }
-  body[data-orient="h"] .funciones { margin-top: 0; gap: 8px; flex-wrap: nowrap; }
-  body[data-orient="h"] .funcion { width: 44px; height: 44px; flex: none; }
-  body[data-orient="h"] .funcion svg { width: 17px; height: 17px; }
-  body[data-orient="h"] .funcion em { font-size: 8px; }
-  body[data-orient="h"] .marca-control { top: 7px; font-size: 9px; }
+  body[data-orient="h"] .grupo-titulo { font-size: 9px; letter-spacing: .18em; }
+  body[data-orient="h"] .cruz { --tam: min(calc((100vw - 96px) / 3), 68px) !important; }
+  body[data-orient="h"] .lcd { justify-self: center; width: min(100%, 250px); padding: 5px 12px 4px; border-radius: 10px; }
+  body[data-orient="h"] .lcd .lcd-fila:last-of-type, body[data-orient="h"] .lcd-barra { display: none; }
+  body[data-orient="h"] .lcd-cmd { font-size: 15px; margin: 1px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  body[data-orient="h"] .lcd-fila { font-size: 9.5px; }
+  body[data-orient="h"] .grupo-centro { display: flex; justify-content: center; }
+  body[data-orient="h"] .alto { width: min(calc(100vw - 220px), 84px) !important; min-width: 58px; font-size: 14px; }
+  body[data-orient="h"] .funciones { margin: 0; gap: 10px; flex-wrap: nowrap; justify-content: center; }
+  body[data-orient="h"] .funcion { width: 42px; height: 42px; flex: none; }
+  body[data-orient="h"] .funcion svg { width: 16px; height: 16px; }
+  body[data-orient="h"] .funcion em { display: none; }
+  body[data-orient="h"] .led { top: 12px; right: 16px; width: 9px; height: 9px; }
 }
