@@ -429,7 +429,7 @@ body.demo-aleatoria .lcd-cmd { color: #fff; text-shadow: 0 0 10px var(--azul-cla
 
   body #pantalla-control { padding: 0; }
   body .ayuda, body .mini-botones, body .marca-control, body .antena { display: none !important; }
-  body .barra { position: absolute; top: max(4px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); z-index: 5; width: auto; flex-wrap: nowrap; gap: 6px; }
+  body .barra { position: static; transform: none; top: max(4px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); z-index: 5; width: auto; flex-wrap: nowrap; gap: 6px; }
   body .chip { padding: 4px 10px; font-size: 12px; background: rgba(5, 7, 12, .7); }
   body .chip:not(.chip-select) span { display: none; }
   body .chip svg { width: 15px; height: 15px; }
@@ -440,20 +440,19 @@ body.demo-aleatoria .lcd-cmd { color: #fff; text-shadow: 0 0 10px var(--azul-cla
     grid-template-rows: auto auto auto !important;
     grid-template-areas: "traccion lcd brazo" "traccion centro brazo" "traccion funciones brazo" !important;
     align-content: center; column-gap: clamp(14px, 4vw, 40px) !important; row-gap: 8px !important;
-    padding: 38px clamp(16px, 3.5vw, 34px) 12px !important; border-radius: 34px !important;
-    min-height: calc(100dvh - 12px);
+    padding: 22px clamp(16px, 3vw, 30px) 14px !important; border-radius: 34px !important;
   }
   body .grupo { gap: 4px; }
   body .grupo-titulo { font-size: 9px; letter-spacing: .18em; }
-  body .cruz { --tam: min(calc((100dvh - 96px) / 3), 84px) !important; }
+  body .cruz { --tam: min(calc((100dvh - 170px) / 3), 70px) !important; }
   body .lcd { justify-self: center; width: min(100%, 300px); padding: 5px 12px 4px; border-radius: 10px; }
   body .lcd .lcd-fila:last-of-type, body .lcd-barra { display: none; }
   body .lcd-cmd { font-size: 15px; margin: 1px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   body .lcd-fila { font-size: 9.5px; }
   body .grupo-centro { display: flex; justify-content: center; }
-  body .alto { width: min(calc(100dvh - 230px), 100px) !important; min-width: 64px; font-size: 15px; }
+  body .alto { width: min(calc(100dvh - 290px), 84px) !important; min-width: 64px; font-size: 15px; }
   body .funciones { margin: 0; gap: 12px; flex-wrap: nowrap; justify-content: center; }
-  body .funcion { width: 52px; height: 52px; flex: none; }
+  body .funcion { width: 46px; height: 46px; flex: none; }
   body .funcion svg { width: 16px; height: 16px; }
   body .funcion em { font-size: 7.5px; letter-spacing: .06em; }
   body .led { top: 12px; right: 16px; width: 9px; height: 9px; }
@@ -464,7 +463,7 @@ body.demo-aleatoria .lcd-cmd { color: #fff; text-shadow: 0 0 10px var(--azul-cla
 
   body[data-orient="h"] #pantalla-control { padding: 0; }
   body[data-orient="h"] .ayuda, body[data-orient="h"] .mini-botones, body[data-orient="h"] .marca-control, body[data-orient="h"] .antena { display: none !important; }
-  body[data-orient="h"] .barra { position: absolute; top: max(4px, 0px); left: 50%; transform: translateX(-50%); z-index: 5; width: auto; flex-wrap: nowrap; gap: 6px; }
+  body[data-orient="h"] .barra { position: static; transform: none; top: max(4px, 0px); left: 50%; transform: translateX(-50%); z-index: 5; width: auto; flex-wrap: nowrap; gap: 6px; }
   body[data-orient="h"] .chip { padding: 4px 10px; font-size: 12px; background: rgba(5, 7, 12, .7); }
   body[data-orient="h"] .chip:not(.chip-select) span { display: none; }
   body[data-orient="h"] .chip svg { width: 15px; height: 15px; }
@@ -475,21 +474,30 @@ body.demo-aleatoria .lcd-cmd { color: #fff; text-shadow: 0 0 10px var(--azul-cla
     grid-template-rows: auto auto auto !important;
     grid-template-areas: "traccion lcd brazo" "traccion centro brazo" "traccion funciones brazo" !important;
     align-content: center; column-gap: clamp(14px, 4vw, 40px) !important; row-gap: 8px !important;
-    padding: 38px clamp(16px, 3.5vw, 34px) 12px !important; border-radius: 34px !important;
-    min-height: calc(100vw - 12px);
+    padding: 22px clamp(16px, 3vw, 30px) 14px !important; border-radius: 34px !important;
   }
   body[data-orient="h"] .grupo { gap: 4px; }
   body[data-orient="h"] .grupo-titulo { font-size: 9px; letter-spacing: .18em; }
-  body[data-orient="h"] .cruz { --tam: min(calc((100vw - 96px) / 3), 84px) !important; }
+  body[data-orient="h"] .cruz { --tam: min(calc((100vw - 170px) / 3), 70px) !important; }
   body[data-orient="h"] .lcd { justify-self: center; width: min(100%, 300px); padding: 5px 12px 4px; border-radius: 10px; }
   body[data-orient="h"] .lcd .lcd-fila:last-of-type, body[data-orient="h"] .lcd-barra { display: none; }
   body[data-orient="h"] .lcd-cmd { font-size: 15px; margin: 1px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   body[data-orient="h"] .lcd-fila { font-size: 9.5px; }
   body[data-orient="h"] .grupo-centro { display: flex; justify-content: center; }
-  body[data-orient="h"] .alto { width: min(calc(100vw - 230px), 100px) !important; min-width: 64px; font-size: 15px; }
+  body[data-orient="h"] .alto { width: min(calc(100vw - 290px), 84px) !important; min-width: 64px; font-size: 15px; }
   body[data-orient="h"] .funciones { margin: 0; gap: 12px; flex-wrap: nowrap; justify-content: center; }
-  body[data-orient="h"] .funcion { width: 52px; height: 52px; flex: none; }
+  body[data-orient="h"] .funcion { width: 46px; height: 46px; flex: none; }
   body[data-orient="h"] .funcion svg { width: 16px; height: 16px; }
   body[data-orient="h"] .funcion em { font-size: 7.5px; letter-spacing: .06em; }
   body[data-orient="h"] .led { top: 12px; right: 16px; width: 9px; height: 9px; }
+}
+
+/* Horizontal: el control no llena la pantalla; queda centrado con margen alrededor */
+@media (orientation: landscape) and (max-height: 500px) {
+  .escena { gap: 10px !important; padding: max(10px, env(safe-area-inset-top)) max(28px, calc(env(safe-area-inset-right) + 16px)) max(14px, env(safe-area-inset-bottom)) max(28px, calc(env(safe-area-inset-left) + 16px)) !important; }
+  .remoto { width: min(100%, 760px) !important; }
+}
+@media (orientation: portrait) and (max-width: 500px) {
+  body[data-orient="h"] #pantalla-control .escena { gap: 10px !important; padding: 12px max(28px, calc(env(safe-area-inset-bottom) + 16px)) 14px max(28px, calc(env(safe-area-inset-top) + 16px)) !important; }
+  body[data-orient="h"] .remoto { width: min(100%, 760px) !important; }
 }
