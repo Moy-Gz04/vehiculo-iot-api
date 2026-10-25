@@ -1,7 +1,6 @@
 // Control Excavadora IoT: login, selector de control y dos modos de manejo.
 //  - RC Clásico (pulso): un toque -> modo "continuo" (sigue hasta la siguiente orden o ALTO)
-//  - Gamepad (mantener): presionar -> modo "mantener" + aviso /mantener cada 250 ms; soltar -> /soltar
-//  - DEMO (junto a SONIDO): demo aleatoria infinita en el ESP; sigue hasta tocar otro botón o ALTO
+//  - Gamepad (mantener): presionar -> modo "mantener" + aviso /mantener cada 400 ms; soltar -> /soltar
 (() => {
   const $ = (s) => document.querySelector(s);
   const $$ = (s) => document.querySelectorAll(s);
@@ -15,7 +14,6 @@
     comandos: new Map(), demos: [], movsDemo: new Map(),
     ws: null, reintento: 0, ping: null, demoEnCurso: null,
     sostenido: null,   // { nombre, boton, timer } en el gamepad
-    demoAleatoria: false,   // la demo infinita del ESP está corriendo
   };
   const clave = () => guardado('ctl.apikey') || '';
   const origen = () => guardado('ctl.origen') || 'WEB-CONTROL';
@@ -141,7 +139,6 @@
     vibrar(18);
     boton.classList.add('presionada'); setTimeout(() => boton.classList.remove('presionada'), 140);
     $$('#remoto .activa').forEach(b => b.classList.remove('activa'));
-    terminarDemoAleatoria();
     if (nombre === 'DETENER') { B.classList.remove('moviendo'); enviar('DETENER', 'toque'); return; }
     boton.classList.add('activa'); B.classList.add('moviendo');
     enviar(nombre, 'continuo');
@@ -156,7 +153,7 @@
   // Gamepad: mantener
   function presionarPad(boton) {
     const nombre = boton.dataset.cmd;
-    soltarSostenido(); terminarDemoAleatoria();
+    soltarSostenido();
     vibrar(12); boton.classList.add('presionada');
     if (nombre === 'DETENER') { enviar('DETENER', 'toque'); return; }
     B.classList.add('moviendo');
@@ -178,10 +175,8 @@
     const b = ev.target.closest('[data-cmd]'); if (!b || b.disabled) return;
     ev.preventDefault();
     if (b.hasAttribute('data-sostener')) { presionarPad(b); return; }   // ON/OFF: activo mientras se mantenga presionado (cualquier modo)
-    if (b.dataset.cmd === 'DEMO_FISICA') { iniciarDemoAleatoria(b); return; }
     if (b.hasAttribute('data-toque')) {                // funciones: siempre un toque corto
       vibrar(15); b.classList.add('presionada'); setTimeout(() => b.classList.remove('presionada'), 220);
-      terminarDemoAleatoria();
       enviar(b.dataset.cmd, 'toque'); return;
     }
     if (B.dataset.control === 'rc') { pulsoRC(b); return; }
@@ -198,20 +193,6 @@
   remoto.addEventListener('contextmenu', (e) => e.preventDefault());
   addEventListener('blur', () => { if (st.sostenido) soltarSostenido(); });
   document.addEventListener('visibilitychange', () => { if (document.hidden && st.sostenido) soltarSostenido(); });
-
-  // DEMO aleatoria: el ESP elige movimientos al azar sin parar (no depende de la señal: con una sola orden basta)
-  function iniciarDemoAleatoria(b) {
-    vibrar([20, 40, 20]); soltarSostenido();
-    $$('#remoto .activa').forEach(x => x.classList.remove('activa'));
-    b.classList.add('activa'); B.classList.add('moviendo', 'demo-aleatoria'); st.demoAleatoria = true;
-    $('#lcd-cmd').textContent = 'Demo ∞'; $('#lcd-info').textContent = 'ALEATORIA';
-    enviar('DEMO_FISICA', 'continuo');
-  }
-  function terminarDemoAleatoria() {
-    if (!st.demoAleatoria) return;
-    st.demoAleatoria = false; B.classList.remove('demo-aleatoria');
-    botonDe('DEMO_FISICA')?.classList.remove('activa'); $('#lcd-info').textContent = 'LISTO';
-  }
 
   // Teclado (PC)
   const TECLAS = {
@@ -236,7 +217,7 @@
   // ---------- LCD ----------
   function pintarEstado(e) {
     if (!e) return;
-    if (e.comando !== undefined) $('#lcd-cmd').textContent = st.demoAleatoria ? 'Demo ∞' : (e.comando ? bonito(e.comando) : '—');
+    if (e.comando !== undefined) $('#lcd-cmd').textContent = e.comando ? bonito(e.comando) : '—';
     $('#lcd-hora').textContent = hora(e.fecha_actualizacion || e.timestamp);
   }
   function pintarEnlace(on) {
@@ -250,14 +231,14 @@
     clearInterval(st.ping);
     const ws = new WebSocket(API.replace(/^http/, 'ws') + `/ws/vehiculos/${st.idV}`);
     st.ws = ws;
-    ws.onopen = () => { st.reintento = 0; pintarEnlace(true); st.ping = setInterval(() => ws.readyState === 1 && ws.send('ping'), 10000); };
+    ws.onopen = () => { st.reintento = 0; pintarEnlace(true); st.ping = setInterval(() => ws.readyState === 1 && ws.send('ping'), 25000); };
     ws.onmessage = (ev) => {
       let m; try { m = JSON.parse(ev.data); } catch { return; }
       if (['pong', 'mantener'].includes(m.evento)) return;
       registrarEvento(m);
       switch (m.evento) {
         case 'estado_actual': pintarEstado(m); if (!m.demo_en_curso) demoTermina(false); break;
-        case 'movimiento': if (st.demoAleatoria && m.comando && m.comando !== 'DEMO_FISICA') terminarDemoAleatoria(); pintarEstado(m); $('#lcd-info').textContent = (m.origen || '').slice(0, 14); if (!$('#hoja').hidden) cargarHistorial();
+        case 'movimiento': pintarEstado(m); $('#lcd-info').textContent = (m.origen || '').slice(0, 14); if (!$('#hoja').hidden) cargarHistorial();
           (st.esperas || []).slice().forEach(f => f(m)); break;
         case 'demo_inicio': demoEnMarcha(m); aviso(`DEMO "${m.demo}" en marcha`); break;
         case 'demo_movimiento': pintarEstado(m); demoPaso(m); break;
@@ -269,7 +250,7 @@
     };
     ws.onclose = () => {
       clearInterval(st.ping); pintarEnlace(false);
-      const espera = Math.min(3000, 300 * 2 ** st.reintento++);   // señal débil: reintenta rápido
+      const espera = Math.min(15000, 1000 * 2 ** st.reintento++);
       setTimeout(() => { if (st.ws === ws && B.dataset.pantalla === 'control') conectar(); }, espera);
     };
   }
@@ -367,12 +348,6 @@
     else if (acc === 'cerrar-hoja') cerrarHoja();
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarHoja(); });
-
-  // iPhone pausa la pestaña en segundo plano: al volver, reconecta sin esperar
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && B.dataset.pantalla === 'control' && (!st.ws || st.ws.readyState > 1)) { st.reintento = 0; conectar(); }
-  });
-  addEventListener('online', () => { if (B.dataset.pantalla === 'control') { st.reintento = 0; conectar(); } });
 
   // ---------- Inicio ----------
   (async function iniciar() {

@@ -370,6 +370,3 @@ body[data-control="rc"] .remoto { margin-top: 64px; }
 .funcion[data-cmd="ENCENDER"] { color: #FF5D73 !important; }
 body[data-control="rc"] .funcion { background: linear-gradient(180deg, #2B3240, #151A24); color: var(--plata-1); box-shadow: inset 0 0 0 1px rgba(201, 206, 215, .25), 0 4px 0 #000; }
 body[data-control="pad"] .funcion { background: linear-gradient(180deg, var(--plata-1), var(--plata-3)); color: var(--negro); box-shadow: 0 4px 0 var(--plata-4), inset 0 1px 0 #fff; }
-
-/* DEMO aleatoria: el botón DEMO queda encendido mientras corre */
-.funcion[data-cmd="DEMO_FISICA"].activa { background: radial-gradient(circle at 50% 35%, var(--azul-claro), var(--azul) 60%, var(--azul-oscuro)) !important; color: #fff !important; box-shadow: 0 0 0 2px var(--azul-hielo), 0 0 24px rgba(91, 134, 255, .95), 0 4px 0 #000 !important; }
