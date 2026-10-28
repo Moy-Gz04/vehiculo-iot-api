@@ -134,6 +134,10 @@ MODELOS_TTS = list(dict.fromkeys(m.strip() for m in os.getenv(
     "GEMINI_TTS_MODELOS", "gemini-3.8-flash-tts,gemini-2.5-flash-preview-tts,gemini-3.1-flash-tts-preview").split(",") if m.strip()))
 VOCES_TTS = ["Puck", "Fenrir", "Charon", "Orus", "Algenib", "Achird", "Zubenelgenubi", "Kore", "Aoede", "Leda", "Zephyr", "Sulafat"]
 _cache_audio: dict[str, bytes] = {}
+# Caché en disco: cada frase se genera una sola vez (la cuota gratis de voz es de pocas peticiones por minuto)
+from pathlib import Path
+CARPETA_AUDIO = Path(__file__).resolve().parent.parent / "cache_voz"
+CARPETA_AUDIO.mkdir(exist_ok=True)
 
 
 class FraseHablar(BaseModel):
@@ -151,7 +155,7 @@ def _a_wav(pcm: bytes, frecuencia: int = 24000) -> bytes:
 
 def _sintetizar(texto: str, voz: str, clave: str, modelo: str) -> bytes:
     cuerpo = {
-        "contents": [{"parts": [{"text": f"Di en español de México, con tono amigable y entusiasta: {texto}"}]}],
+        "contents": [{"parts": [{"text": texto}]}],   # solo la frase: si se agrega una instrucción, a veces la lee en voz alta
         "generationConfig": {"responseModalities": ["AUDIO"],
                              "speechConfig": {"voiceConfig": {"prebuiltVoiceConfig": {"voiceName": voz}}}},
     }
@@ -177,12 +181,16 @@ async def hablar(frase: FraseHablar):
     if not clave:
         raise HTTPException(503, "Falta GEMINI_API_KEY en el .env del servidor")
     voz_elegida = frase.voz if frase.voz in VOCES_TTS else "Puck"
-    llave = hashlib.sha1(f"{voz_elegida}|{frase.texto}".encode()).hexdigest()
+    llave = hashlib.sha1(f"v2|{voz_elegida}|{frase.texto}".encode()).hexdigest()
+    archivo = CARPETA_AUDIO / f"{llave}.wav"
+    if llave not in _cache_audio and archivo.exists():
+        _cache_audio[llave] = archivo.read_bytes()
     if llave not in _cache_audio:
         ultimo = ""
         for modelo in MODELOS_TTS:
             try:
                 _cache_audio[llave] = await asyncio.to_thread(_sintetizar, frase.texto, voz_elegida, clave, modelo)
+                archivo.write_bytes(_cache_audio[llave])
                 break
             except urllib.error.HTTPError as ex:
                 ultimo = f"{modelo} respondió {ex.code}"

@@ -501,13 +501,9 @@
       url = URL.createObjectURL(await r.blob()); audiosIA.set(llave, url);
     }
     voz.hablando = true;
-    try { voz.rec && voz.rec.stop(); } catch { /* ya detenido */ }
     audioDemon.src = url;
-    audioDemon.onended = audioDemon.onerror = () => {
-      voz.silencioHasta = Date.now() + 500; voz.hablando = false;
-      if (voz.activa && voz.rec) setTimeout(() => { try { voz.rec.start(); } catch { /* ya iniciado */ } }, 300);
-    };
-    try { await audioDemon.play(); } catch (e) { voz.hablando = false; if (voz.activa && voz.rec) try { voz.rec.start(); } catch { /* */ } throw e; }
+    audioDemon.onended = audioDemon.onerror = () => { voz.silencioHasta = Date.now() + 700; voz.hablando = false; };
+    try { await audioDemon.play(); } catch (e) { voz.hablando = false; throw e; }
   }
   function hablar(texto) {
     if (!voz.conVoz || B.dataset.control !== 'voz' || !texto) return;
@@ -516,13 +512,19 @@
     hablarNavegador(texto);
   }
   // Calienta la caché con las frases de siempre para que salgan al instante
-  function precargarVozIA() {
-    const ia = vozIA(); if (!ia || !clave()) return;
-    ['Estoy esperando tu orden', 'Okey, me detengo', 'No te entendí, ¿me lo repites?', ...CONFIRMAR].forEach(t => {
-      const llave = ia + '|' + t; if (audiosIA.has(llave)) return;
-      fetch(API + '/voz/hablar', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-API-Key': clave() }, body: JSON.stringify({ texto: t, voz: ia }) })
-        .then(r => r.ok ? r.blob() : null).then(b => { if (b) audiosIA.set(llave, URL.createObjectURL(b)); }).catch(() => {});
-    });
+  let precargando = false;
+  async function precargarVozIA() {
+    const ia = vozIA(); if (!ia || !clave() || precargando) return;
+    precargando = true;
+    for (const t of ['Estoy esperando tu orden', CONFIRMAR[0], 'Okey, me detengo', 'No te entendí, ¿me lo repites?', FRASE_SALUDO, ...CONFIRMAR.slice(1)]) {
+      const llave = ia + '|' + t; if (audiosIA.has(llave)) continue;
+      try {
+        const r = await fetch(API + '/voz/hablar', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-API-Key': clave() }, body: JSON.stringify({ texto: t, voz: ia }) });
+        if (!r.ok) break;                              // cuota agotada por ahora: se reintenta la próxima vez
+        audiosIA.set(llave, URL.createObjectURL(await r.blob()));
+      } catch { break; }
+    }
+    precargando = false;
   }
   function hablarNavegador(texto) {
     if (!sintesis || !texto) return;
@@ -629,7 +631,7 @@
     rec.onerror = (ev) => {
       if (ev.error === 'not-allowed' || ev.error === 'service-not-allowed') { aviso('Permite el micrófono para usar la voz', true); apagarVoz(); }
     };
-    rec.onend = () => { if (voz.activa && !voz.hablando) setTimeout(() => { if (voz.activa && !voz.hablando) try { rec.start(); } catch { /* ya iniciado */ } }, 250); };
+    rec.onend = () => { if (voz.activa) setTimeout(() => { if (voz.activa) try { rec.start(); } catch { /* ya iniciado */ } }, 250); };
     voz.rec = rec;
     rec.start();
   }
