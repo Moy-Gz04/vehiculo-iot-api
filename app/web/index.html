@@ -10,7 +10,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%228%22 fill=%22%23D9DDE4%22/%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%228%22 fill=%22%232250D9%22/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
-  <link rel="stylesheet" href="/control/app.css?v=17">
+  <link rel="stylesheet" href="/control/app.css?v=16">
 </head>
 <body data-pantalla="login" data-control="rc" data-orient="h">
 
@@ -200,7 +200,7 @@
           <button type="button" class="robot-alto" data-accion="robot-alto" aria-label="Alto: detener todo">ALTO</button>
         </div>
         <div class="robot-pantalla" role="status" aria-live="polite">
-          <div class="rp-fila"><span id="robot-estado">EN ESPERA</span><span id="robot-enlace">● EN LÍNEA</span></div>
+          <div class="rp-fila"><span id="robot-estado">EN ESPERA</span><span class="rp-der"><button type="button" class="rp-voz" data-accion="robot-voz" aria-pressed="true" aria-label="Voz de Demon">🔊 VOZ</button><span id="robot-enlace">● EN LÍNEA</span></span></div>
           <div id="robot-dice">¡Hola! Soy Demon.</div>
         </div>
       </div>
@@ -232,6 +232,6 @@
   </aside>
 
   <div class="aviso" id="aviso" role="status" aria-live="polite"></div>
-  <script src="/control/app.js?v=30"></script>
+  <script src="/control/app.js?v=31"></script>
 </body>
 </html>
