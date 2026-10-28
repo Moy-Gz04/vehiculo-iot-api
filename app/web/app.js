@@ -80,7 +80,7 @@
     $('#ayuda').textContent = tipo === 'rc' ? 'Toca una acción: la excavadora sigue hasta que eliges otra o presionas ALTO.'
       : 'Mantén presionado un botón para moverte; al soltarlo se detiene.';
     if (tipo === 'voz') {
-      robot('reposo');
+      robot('reposo'); precargarVozIA();
       const bv = $('.rp-voz'); if (bv) { bv.setAttribute('aria-pressed', String(voz.conVoz)); bv.textContent = voz.conVoz ? '🔊 VOZ' : '🔇 MUDO'; }
     }
     if (!guardado('ctl.orient')) B.dataset.orient = esMovil() && innerHeight > innerWidth ? 'v' : 'h';
@@ -452,7 +452,7 @@
     const vs = sintesis ? sintesis.getVoices().filter(v => /^es/i.test(v.lang)) : [];
     llenarVoces(vs);
     const elegida = guardado('ctl.vozNombre');
-    if (elegida) { const v = vs.find(x => x.name === elegida); if (v) { vozSimon = v; return; } }
+    if (elegida && !elegida.startsWith('ia:')) { const v = vs.find(x => x.name === elegida); if (v) { vozSimon = v; return; } }
     // Preferencia: voces naturales masculinas en español (iPhone: Juan; Chrome: Google; Windows: Raúl/Jorge)
     const PREF = [/juan/i, /jorge/i, /ra[uú]l/i, /diego/i, /google espa[nñ]ol de estados unidos/i, /google espa[nñ]ol/i, /enhanced|premium|mejorad/i];
     const mx = vs.filter(v => /es-(MX|US)/i.test(v.lang));
@@ -460,21 +460,59 @@
       || mx[0] || vs[0] || null;
   }
   // Catálogo: todas las voces en español que trae este aparato (iPhone, Chrome o Windows tienen distintas)
+  const VOCES_IA = [['Puck', 'alegre'], ['Fenrir', 'enérgico'], ['Charon', 'grave'], ['Orus', 'firme'], ['Algenib', 'rasposo'],
+    ['Achird', 'amigable'], ['Zubenelgenubi', 'casual'], ['Kore', 'mujer · firme'], ['Aoede', 'mujer · ligera'], ['Leda', 'mujer · juvenil'],
+    ['Zephyr', 'mujer · brillante'], ['Sulafat', 'mujer · cálida']];
   function llenarVoces(vs) {
     const sel = $('#robot-voces'); if (!sel) return;
-    const actual = guardado('ctl.vozNombre') || '';
-    sel.innerHTML = '<option value="">Automática</option>' + vs
+    const actual = guardado('ctl.vozNombre') ?? 'ia:Puck';
+    sel.innerHTML = '<optgroup label="Voces IA de Demon">' + VOCES_IA.map(([n, d]) => `<option value="ia:${n}" ${actual === 'ia:' + n ? 'selected' : ''}>${n} · ${d}</option>`).join('') + '</optgroup>'
+      + `<optgroup label="Voces de este aparato"><option value="" ${actual === '' ? 'selected' : ''}>Automática</option>` + vs
       .sort((a, b) => a.lang.localeCompare(b.lang) || a.name.localeCompare(b.name))
-      .map(v => `<option value="${esc(v.name)}" ${v.name === actual ? 'selected' : ''}>${esc(v.name.replace(/^(Microsoft|Google) /, ''))} · ${esc(v.lang)}</option>`).join('');
+      .map(v => `<option value="${esc(v.name)}" ${v.name === actual ? 'selected' : ''}>${esc(v.name.replace(/^(Microsoft|Google) /, ''))} · ${esc(v.lang)}</option>`).join('') + '</optgroup>';
   }
   $('#robot-voces')?.addEventListener('change', (e) => {
-    guardado('ctl.vozNombre', e.target.value || null);
-    elegirVoz();
+    guardado('ctl.vozNombre', e.target.value);
+    elegirVoz(); precargarVozIA();
     hablar('Hola, soy Demon. ¿Te gusta esta voz?');
   });
   if (sintesis) { elegirVoz(); sintesis.onvoiceschanged = elegirVoz; }
+  // Voz IA (Gemini en el servidor): si la voz elegida empieza con "ia:" se pide el audio a /voz/hablar.
+  // Si falla, se usa la voz del aparato para que Demon nunca se quede callado.
+  const audioDemon = new Audio();
+  const audiosIA = new Map();
+  function vozIA() { const v = guardado('ctl.vozNombre') ?? 'ia:Puck'; return v.startsWith('ia:') ? v.slice(3) : null; }
+  async function hablarIA(texto, nombre) {
+    const llave = nombre + '|' + texto;
+    let url = audiosIA.get(llave);
+    if (!url) {
+      const r = await fetch(API + '/voz/hablar', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-API-Key': clave() },
+        body: JSON.stringify({ texto, voz: nombre }) });
+      if (!r.ok) throw new Error('voz IA ' + r.status);
+      url = URL.createObjectURL(await r.blob()); audiosIA.set(llave, url);
+    }
+    voz.hablando = true;
+    audioDemon.src = url;
+    audioDemon.onended = audioDemon.onerror = () => { voz.silencioHasta = Date.now() + 700; voz.hablando = false; };
+    await audioDemon.play();
+  }
   function hablar(texto) {
-    if (!sintesis || !voz.conVoz || B.dataset.control !== 'voz' || !texto) return;
+    if (!voz.conVoz || B.dataset.control !== 'voz' || !texto) return;
+    const ia = vozIA();
+    if (ia) { audioDemon.pause(); hablarIA(texto.replace(/[“”✋→]/g, ''), ia).catch(() => hablarNavegador(texto)); return; }
+    hablarNavegador(texto);
+  }
+  // Calienta la caché con las frases de siempre para que salgan al instante
+  function precargarVozIA() {
+    const ia = vozIA(); if (!ia || !clave()) return;
+    ['Estoy esperando tu orden', 'Okey, me detengo', 'No te entendí, ¿me lo repites?', ...CONFIRMAR].forEach(t => {
+      const llave = ia + '|' + t; if (audiosIA.has(llave)) return;
+      fetch(API + '/voz/hablar', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-API-Key': clave() }, body: JSON.stringify({ texto: t, voz: ia }) })
+        .then(r => r.ok ? r.blob() : null).then(b => { if (b) audiosIA.set(llave, URL.createObjectURL(b)); }).catch(() => {});
+    });
+  }
+  function hablarNavegador(texto) {
+    if (!sintesis || !texto) return;
     sintesis.cancel();
     const u = new SpeechSynthesisUtterance(texto.replace(/[“”✋→]/g, ''));
     u.lang = 'es-MX'; if (vozSimon) u.voice = vozSimon;
