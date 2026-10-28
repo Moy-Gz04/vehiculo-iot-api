@@ -28,8 +28,8 @@ except ImportError:
 
 # Primero el modelo del .env; si está saturado (503/429) o no existe (404), prueba los siguientes.
 MODELOS = list(dict.fromkeys(m.strip() for m in (
-    os.getenv("GEMINI_MODEL", "gemini-3.8-flash") + "," +
-    os.getenv("GEMINI_MODELOS_RESPALDO", "gemini-3.8-flash-lite,gemini-flash-latest,gemini-flash-lite-latest")
+    os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite") + "," +
+    os.getenv("GEMINI_MODELOS_RESPALDO", "gemini-3.8-flash,gemini-3.6-flash,gemini-3.1-flash-lite,gemini-flash-lite-latest,gemini-flash-latest")
 ).split(",") if m.strip()))
 REINTENTABLES = {404, 429, 500, 503}
 URL = "https://generativelanguage.googleapis.com/v1beta/models/{modelo}:generateContent"
