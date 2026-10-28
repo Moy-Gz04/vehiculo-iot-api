@@ -387,7 +387,7 @@
   function interpretarLocal(t) {      // respaldo si el servidor no tiene Gemini o no responde
     const n = t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
     const reglas = [
-      [/^(alto|para|frena|detente|quieto|stop)b|b(alto|frena|detente|stop)b/, 'DETENER'], [/(adelante|avanza)/, 'AVANZAR'], [/(atras|retrocede|reversa)/, 'RETROCEDER'],
+      [/^(alto|para|frena|detente|quieto|stop)\b|\b(alto|frena|detente|stop)\b/, 'DETENER'], [/(adelante|avanza)/, 'AVANZAR'], [/(atras|retrocede|reversa)/, 'RETROCEDER'],
       [/(sube|levanta).*(brazo|pala)|(brazo|pala).*(arriba|sube)/, 'SUBIR_BRAZO'], [/(baja).*(brazo|pala)|(brazo|pala).*(abajo|baja)/, 'BAJAR_BRAZO'],
       [/(cabina|torre|rota).*izquierda/, 'ROTAR_IZQUIERDA'], [/(cabina|torre|rota).*derecha/, 'ROTAR_DERECHA'],
       [/izquierda/, 'GIRAR_IZQUIERDA'], [/derecha/, 'GIRAR_DERECHA'], [/(luz|luces)/, 'LUCES'], [/(claxon|sonido|pita)/, 'SONIDO'],
