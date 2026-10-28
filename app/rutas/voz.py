@@ -26,7 +26,7 @@ try:
 except ImportError:
     CONTEXTO_SSL = ssl.create_default_context()
 
-MODELO = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+MODELO = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
 URL = "https://generativelanguage.googleapis.com/v1beta/models/{modelo}:generateContent"
 
 INSTRUCCIONES = """Eres el intérprete de voz de una retroexcavadora a control remoto.
