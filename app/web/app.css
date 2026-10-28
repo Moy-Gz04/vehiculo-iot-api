@@ -683,3 +683,12 @@ body.en-linea #robot-enlace { color: #4ade80; }
 .rp-der { display: inline-flex; align-items: center; gap: 10px; }
 .rp-voz { border: 1px solid #1d2b4f; background: #0a1430; color: #a9c1ff; font: 700 10px var(--mono); letter-spacing: .1em; padding: 3px 8px; border-radius: 999px; cursor: pointer; }
 .rp-voz[aria-pressed="false"] { color: var(--plata-4); }
+/* Demon: fondo plateado para distinguirlo de los otros controles */
+body[data-pantalla="control"][data-control="voz"] {
+  background:
+    radial-gradient(900px 520px at 50% -8%, rgba(255, 255, 255, .95), transparent 62%),
+    radial-gradient(700px 420px at 50% 112%, rgba(120, 128, 142, .35), transparent 60%),
+    linear-gradient(180deg, #E9ECF1 0%, #C9CED7 55%, #AEB4BF 100%);
+  background-attachment: fixed;
+}
+body[data-control="voz"] .robot-sombra { background: radial-gradient(closest-side, rgba(20, 24, 32, .45), transparent); }
