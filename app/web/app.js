@@ -374,6 +374,96 @@
     } catch (e) { aviso(e.message, true); }
   }
 
+  // ---------- Control por voz ----------
+  // El navegador transcribe (Web Speech API, es-MX) y la API interpreta con Gemini (POST /voz/interpretar).
+  // "Alto / para / frena" se resuelve aquí mismo, sin esperar a Gemini.
+  const Reconocedor = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const FUNCIONES_TOQUE = new Set(['ENCENDER', 'LUCES', 'SONIDO']);
+  const voz = { activa: false, rec: null, turno: 0 };
+  const dormir = (ms) => new Promise(ok => setTimeout(ok, ms));
+
+  function textoVoz(t, clase = '') { const e = $('#voz-texto'); e.textContent = t; e.className = clase; }
+
+  function interpretarLocal(t) {      // respaldo si el servidor no tiene Gemini o no responde
+    const n = t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const reglas = [
+      [/(alto|para|frena|detente|quieto|stop)/, 'DETENER'], [/(adelante|avanza)/, 'AVANZAR'], [/(atras|retrocede|reversa)/, 'RETROCEDER'],
+      [/(sube|levanta).*(brazo|pala)|(brazo|pala).*(arriba|sube)/, 'SUBIR_BRAZO'], [/(baja).*(brazo|pala)|(brazo|pala).*(abajo|baja)/, 'BAJAR_BRAZO'],
+      [/(cabina|torre|rota).*izquierda/, 'ROTAR_IZQUIERDA'], [/(cabina|torre|rota).*derecha/, 'ROTAR_DERECHA'],
+      [/izquierda/, 'GIRAR_IZQUIERDA'], [/derecha/, 'GIRAR_DERECHA'], [/(luz|luces)/, 'LUCES'], [/(claxon|sonido|pita)/, 'SONIDO'],
+      [/(enciende|prende|apaga)/, 'ENCENDER'], [/demo/, 'DEMO_FISICA'],
+    ];
+    const r = reglas.find(([re]) => re.test(n));
+    return r ? [{ comando: r[1], segundos: 0 }] : [];
+  }
+
+  async function ejecutarAcciones(acciones, turno) {
+    for (const a of acciones) {
+      if (turno !== voz.turno) return;                       // llegó otra orden de voz: esta se cancela
+      if (!st.comandos.has(a.comando)) continue;
+      await enviar(a.comando, FUNCIONES_TOQUE.has(a.comando) ? 'toque' : 'continuo');
+      if (a.segundos > 0 && a.comando !== 'DETENER') {
+        await dormir(a.segundos * 1000);
+        if (turno === voz.turno) await enviar('DETENER', 'toque');
+      }
+    }
+  }
+
+  async function procesarVoz(texto) {
+    const turno = ++voz.turno;
+    textoVoz(`“${texto}”`);
+    if (/\b(alto|para|frena|detente|quieto|stop)\b/i.test(texto) && texto.split(/\s+/).length <= 3) {
+      await enviar('DETENER', 'toque'); textoVoz('Alto ✋'); return;
+    }
+    let acciones, respuesta;
+    try {
+      const r = await post('/voz/interpretar', { texto });
+      acciones = r.acciones; respuesta = r.respuesta;
+    } catch (e) {
+      acciones = interpretarLocal(texto); respuesta = acciones.length ? bonito(acciones[0].comando) + ' (sin Gemini)' : '';
+      if (e.status === 503 || e.status === 502) aviso(e.message, true);
+    }
+    if (turno !== voz.turno) return;
+    if (!acciones.length) { textoVoz(`No entendí: “${texto}”`, 'mal'); return; }
+    textoVoz(respuesta || acciones.map(a => bonito(a.comando)).join(' → '), 'ok');
+    $('#lcd-info').textContent = ('VOZ ' + acciones[0].comando).slice(0, 14);
+    ejecutarAcciones(acciones, turno);
+  }
+
+  function escuchar() {
+    const rec = new Reconocedor();
+    rec.lang = 'es-MX'; rec.continuous = true; rec.interimResults = true; rec.maxAlternatives = 1;
+    rec.onresult = (ev) => {
+      const r = ev.results[ev.results.length - 1];
+      const t = r[0].transcript.trim();
+      if (!t) return;
+      if (r.isFinal) procesarVoz(t); else textoVoz(t + '…', 'parcial');
+    };
+    rec.onerror = (ev) => {
+      if (ev.error === 'not-allowed' || ev.error === 'service-not-allowed') { aviso('Permite el micrófono para usar la voz', true); apagarVoz(); }
+    };
+    rec.onend = () => { if (voz.activa) setTimeout(() => { if (voz.activa) try { rec.start(); } catch { /* ya iniciado */ } }, 250); };
+    voz.rec = rec;
+    rec.start();
+  }
+
+  function apagarVoz() {
+    voz.activa = false; voz.turno++;
+    try { voz.rec && voz.rec.stop(); } catch { /* ya detenido */ }
+    voz.rec = null;
+    $('#voz-barra').hidden = true;
+    $$('[data-accion="voz"]').forEach(b => { b.setAttribute('aria-pressed', 'false'); b.classList.remove('activa'); });
+  }
+
+  function alternarVoz() {
+    if (voz.activa) { apagarVoz(); aviso('Control por voz apagado'); return; }
+    if (!Reconocedor) { aviso('Este navegador no reconoce voz. Usa Safari o Chrome actualizados.', true); return; }
+    voz.activa = true;
+    $('#voz-barra').hidden = false; textoVoz('Escuchando… di una orden');
+    $$('[data-accion="voz"]').forEach(b => { b.setAttribute('aria-pressed', 'true'); b.classList.add('activa'); });
+    try { escuchar(); } catch (e) { aviso('No se pudo usar el micrófono', true); apagarVoz(); }
+  }
+
   // ---------- Acciones generales ----------
   document.addEventListener('click', (ev) => {
     const a = ev.target.closest('[data-accion]'); if (!a) return;
@@ -384,6 +474,7 @@
     else if (acc === 'hoja') abrirHoja(a.dataset.tab);
     else if (acc === 'cerrar-hoja') cerrarHoja();
     else if (acc === 'wifi') borrarWifi();
+    else if (acc === 'voz') alternarVoz();
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarHoja(); });
 

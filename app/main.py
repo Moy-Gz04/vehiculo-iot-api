@@ -18,6 +18,7 @@ from app.rutas.demos import demos
 from app.rutas.estado import estado, historial
 from app.rutas.portal import portal_api
 from app.rutas.vehiculos import comandos, vehiculos
+from app.rutas.voz import voz
 from app.rutas.ws import ws_router
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -36,7 +37,7 @@ app = FastAPI(
 def documentacion():
     return pagina_docs(app.openapi_url, app.title)
 
-for r in (vehiculos, comandos, estado, historial, demos, ws_router, portal_api):
+for r in (vehiculos, comandos, estado, historial, demos, voz, ws_router, portal_api):
     app.include_router(r)
 
 # Portal del proyecto (API, simulador, control y guía del examen) y control remoto web, mismo origen que la API

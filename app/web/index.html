@@ -10,7 +10,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%228%22 fill=%22%23D9DDE4%22/%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%228%22 fill=%22%232250D9%22/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
-  <link rel="stylesheet" href="/control/app.css?v=11">
+  <link rel="stylesheet" href="/control/app.css?v=12">
 </head>
 <body data-pantalla="login" data-control="rc" data-orient="h">
 
@@ -109,6 +109,7 @@
               <button type="button" class="pildora" data-accion="hoja" data-tab="demos">DEMO</button>
               <button type="button" class="pildora" data-accion="hoja" data-tab="historial">LOG</button>
               <button type="button" class="pildora" data-accion="wifi" aria-label="Borrar el Wi-Fi guardado en la excavadora">WI-FI</button>
+              <button type="button" class="pildora pildora-voz" data-accion="voz" aria-pressed="false" aria-label="Control por voz">VOZ</button>
             </div>
           </div>
 
@@ -133,6 +134,7 @@
           </div>
         </div>
       </div>
+      <p class="voz-barra" id="voz-barra" hidden><span class="voz-punto"></span><span id="voz-texto">Escuchando… di una orden</span></p>
       <p class="ayuda" id="ayuda">Toca una acción: la excavadora sigue hasta que eliges otra o presionas ALTO.</p>
     </div>
   </section>
@@ -160,6 +162,6 @@
   </aside>
 
   <div class="aviso" id="aviso" role="status" aria-live="polite"></div>
-  <script src="/control/app.js?v=13"></script>
+  <script src="/control/app.js?v=14"></script>
 </body>
 </html>
