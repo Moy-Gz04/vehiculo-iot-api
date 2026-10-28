@@ -80,8 +80,7 @@
     $('#ayuda').textContent = tipo === 'rc' ? 'Toca una acción: la excavadora sigue hasta que eliges otra o presionas ALTO.'
       : 'Mantén presionado un botón para moverte; al soltarlo se detiene.';
     if (tipo === 'voz') {
-      robot('reposo'); precargarVozIA();
-      const bv = $('.rp-voz'); if (bv) { bv.setAttribute('aria-pressed', String(voz.conVoz)); bv.textContent = voz.conVoz ? '🔊 VOZ' : '🔇 MUDO'; }
+      robot('reposo');
     }
     if (!guardado('ctl.orient')) B.dataset.orient = esMovil() && innerHeight > innerWidth ? 'v' : 'h';
     actualizarTextoGirar();
@@ -395,8 +394,7 @@
     }
     return enviar(comando, modo);
   }
-  const voz = { activa: false, rec: null, turno: 0, ultimaInmediata: '', ultimaInmediataEn: 0,
-    conVoz: guardado('ctl.vozSimon') !== 'no', hablando: false, silencioHasta: 0 };
+  const voz = { activa: false, rec: null, turno: 0, ultimaInmediata: '', ultimaInmediataEn: 0 };
   const dormir = (ms) => new Promise(ok => setTimeout(ok, ms));
 
   function textoVoz(t, clase = '') {
@@ -424,119 +422,18 @@
     $$('#robot .opto').forEach(o => o.classList.toggle('on', o.dataset.opto === comando));
     if (estado === 'feliz' || estado === 'confundido') robotT = setTimeout(() => robot(voz.activa ? 'escucha' : 'reposo'), 2200);
   }
-  function robotMueve(comando, decir = true) {
+  function robotMueve(comando) {
     if (comando === 'DETENER') robot('feliz');
     else if (MIRADA[comando]) robot('mueve', comando);
     else robot('feliz', comando);
-    if (decir) hablar(comando === 'DETENER' ? 'Okey, me detengo' : CONFIRMAR[Math.floor(Math.random() * CONFIRMAR.length)]);
   }
 
-  // ---------- Voz de Demon (síntesis del navegador: gratis y sin internet) ----------
-  // Mientras habla (y un momento después) se ignora el micrófono, para que no se escuche a sí mismo
-  // y tome "avanzando" como una orden nueva.
-  // Demon no narra cada movimiento: solo confirma, saluda y se presenta.
-  const CONFIRMAR = ['Okey, lo haré', 'Enseguida', 'Va, lo hago', 'Claro que sí'];
-  const PRESENTACION = 'Hola, soy Demon, el asistente de voz de la excavadora. Puedo avanzar, girar, subir y bajar el brazo, '
-    + 'prender las luces y mucho más. Solo dime qué hacer y yo me encargo.';
-  // Rutina "saluda": se presenta mientras sube la pala.
-  // Los segundos de cada paso se ajustan aquí.
+  // Rutina "saluda": sube la pala (los segundos se ajustan aquí)
   const RUTINA_SALUDO = [
     { comando: 'SUBIR_BRAZO', segundos: 1.5 },
   ];
-  const FRASE_SALUDO = 'Hola, soy Demon. Puedo moverme, ¡miraaa! Puedes decirme qué hacer.';
   const esSaludo = (t) => /\b(saluda|saludo|saludar|salude|saludame|salúdame|di hola)\b/i.test(t);
   const esPresentacion = (t) => /(presentate|preséntate|quien eres|quién eres|como te llamas|cómo te llamas|que puedes hacer|qué puedes hacer)/i.test(t);
-  const sintesis = window.speechSynthesis;
-  let vozSimon = null;
-  function elegirVoz() {
-    const vs = sintesis ? sintesis.getVoices().filter(v => /^es/i.test(v.lang)) : [];
-    llenarVoces(vs);
-    const elegida = guardado('ctl.vozNombre');
-    if (elegida && !elegida.startsWith('ia:')) { const v = vs.find(x => x.name === elegida); if (v) { vozSimon = v; return; } }
-    // Preferencia: voces naturales masculinas en español (iPhone: Juan; Chrome: Google; Windows: Raúl/Jorge)
-    const PREF = [/juan/i, /jorge/i, /ra[uú]l/i, /diego/i, /google espa[nñ]ol de estados unidos/i, /google espa[nñ]ol/i, /enhanced|premium|mejorad/i];
-    const mx = vs.filter(v => /es-(MX|US)/i.test(v.lang));
-    vozSimon = PREF.map(re => mx.find(v => re.test(v.name)) || vs.find(v => re.test(v.name))).find(Boolean)
-      || mx[0] || vs[0] || null;
-  }
-  // Catálogo: todas las voces en español que trae este aparato (iPhone, Chrome o Windows tienen distintas)
-  const VOCES_IA = [['Puck', 'alegre'], ['Fenrir', 'enérgico'], ['Charon', 'grave'], ['Orus', 'firme'], ['Algenib', 'rasposo'],
-    ['Achird', 'amigable'], ['Zubenelgenubi', 'casual'], ['Kore', 'mujer · firme'], ['Aoede', 'mujer · ligera'], ['Leda', 'mujer · juvenil'],
-    ['Zephyr', 'mujer · brillante'], ['Sulafat', 'mujer · cálida']];
-  function llenarVoces(vs) {
-    const sel = $('#robot-voces'); if (!sel) return;
-    const actual = guardado('ctl.vozNombre') ?? 'ia:Puck';
-    sel.innerHTML = '<optgroup label="Voces IA de Demon">' + VOCES_IA.map(([n, d]) => `<option value="ia:${n}" ${actual === 'ia:' + n ? 'selected' : ''}>${n} · ${d}</option>`).join('') + '</optgroup>'
-      + `<optgroup label="Voces de este aparato"><option value="" ${actual === '' ? 'selected' : ''}>Automática</option>` + vs
-      .sort((a, b) => a.lang.localeCompare(b.lang) || a.name.localeCompare(b.name))
-      .map(v => `<option value="${esc(v.name)}" ${v.name === actual ? 'selected' : ''}>${esc(v.name.replace(/^(Microsoft|Google) /, ''))} · ${esc(v.lang)}</option>`).join('') + '</optgroup>';
-  }
-  $('#robot-voces')?.addEventListener('change', (e) => {
-    desbloquearAudio();
-    guardado('ctl.vozNombre', e.target.value);
-    elegirVoz(); precargarVozIA();
-    hablar('Hola, soy Demon. ¿Te gusta esta voz?');
-  });
-  if (sintesis) { elegirVoz(); sintesis.onvoiceschanged = elegirVoz; }
-  // Voz IA (Gemini en el servidor): si la voz elegida empieza con "ia:" se pide el audio a /voz/hablar.
-  // Si falla, se usa la voz del aparato para que Demon nunca se quede callado.
-  const audioDemon = new Audio();
-  audioDemon.preload = 'auto'; audioDemon.setAttribute('playsinline', '');
-  const SILENCIO = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
-  let audioListo = false;
-  function desbloquearAudio() {           // iOS solo deja sonar audio después de un toque: se "abre" aquí
-    if (audioListo) return;
-    audioDemon.src = SILENCIO;
-    audioDemon.play().then(() => { audioListo = true; }).catch(() => {});
-  }
-  const audiosIA = new Map();
-  function vozIA() { const v = guardado('ctl.vozNombre') ?? 'ia:Puck'; return v.startsWith('ia:') ? v.slice(3) : null; }
-  async function hablarIA(texto, nombre) {
-    const llave = nombre + '|' + texto;
-    let url = audiosIA.get(llave);
-    if (!url) {
-      const r = await fetch(API + '/voz/hablar', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-API-Key': clave() },
-        body: JSON.stringify({ texto, voz: nombre }) });
-      if (!r.ok) throw new Error('voz IA ' + r.status);
-      url = URL.createObjectURL(await r.blob()); audiosIA.set(llave, url);
-    }
-    voz.hablando = true;
-    audioDemon.src = url;
-    audioDemon.onended = audioDemon.onerror = () => { voz.silencioHasta = Date.now() + 700; voz.hablando = false; };
-    try { await audioDemon.play(); } catch (e) { voz.hablando = false; throw e; }
-  }
-  function hablar(texto) {
-    if (!voz.conVoz || B.dataset.control !== 'voz' || !texto) return;
-    const ia = vozIA();
-    if (ia) { audioDemon.pause(); hablarIA(texto.replace(/[“”✋→]/g, ''), ia).catch(() => hablarNavegador(texto)); return; }
-    hablarNavegador(texto);
-  }
-  // Calienta la caché con las frases de siempre para que salgan al instante
-  let precargando = false;
-  async function precargarVozIA() {
-    const ia = vozIA(); if (!ia || !clave() || precargando) return;
-    precargando = true;
-    for (const t of ['Estoy esperando tu orden', CONFIRMAR[0], 'Okey, me detengo', 'No te entendí, ¿me lo repites?', FRASE_SALUDO, ...CONFIRMAR.slice(1)]) {
-      const llave = ia + '|' + t; if (audiosIA.has(llave)) continue;
-      try {
-        const r = await fetch(API + '/voz/hablar', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-API-Key': clave() }, body: JSON.stringify({ texto: t, voz: ia }) });
-        if (!r.ok) break;                              // cuota agotada por ahora: se reintenta la próxima vez
-        audiosIA.set(llave, URL.createObjectURL(await r.blob()));
-      } catch { break; }
-    }
-    precargando = false;
-  }
-  function hablarNavegador(texto) {
-    if (!sintesis || !texto) return;
-    sintesis.cancel();
-    const u = new SpeechSynthesisUtterance(texto.replace(/[“”✋→]/g, ''));
-    u.lang = 'es-MX'; if (vozSimon) u.voice = vozSimon;
-    u.pitch = 0.95; u.rate = 1; u.volume = 1;
-    voz.hablando = true;
-    u.onend = u.onerror = () => { voz.silencioHasta = Date.now() + 700; voz.hablando = false; };
-    sintesis.speak(u);
-  }
-  const escuchandoseASiMismo = () => voz.hablando || Date.now() < voz.silencioHasta;
 
   function interpretarLocal(t) {      // respaldo si el servidor no tiene Gemini o no responde
     const n = t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -555,14 +452,13 @@
     for (const a of acciones) {
       if (turno !== voz.turno) return;                       // llegó otra orden de voz: esta se cancela
       if (!st.comandos.has(a.comando)) continue;
-      robotMueve(a.comando, !voz.conRespuesta);
+      robotMueve(a.comando);
       await ordenVoz(a.comando, FUNCIONES_TOQUE.has(a.comando) ? 'toque' : 'continuo');
       if (a.segundos > 0 && a.comando !== 'DETENER') {
         await dormir(a.segundos * 1000);
         if (turno === voz.turno) { robot('feliz'); await enviar('DETENER', 'toque'); }
       }
     }
-    voz.conRespuesta = false;
   }
 
   // Frase compuesta o con tiempo ("dos segundos", "y luego") -> la interpreta Gemini.
@@ -589,12 +485,10 @@
     if (esSaludo(texto)) {
       const turno = ++voz.turno;
       robot('feliz'); textoVoz('¡Hola! Soy Demon 👋', 'ok');
-      voz.conRespuesta = true;                           // ya habló: no confirmar cada paso
-      hablar(FRASE_SALUDO);
       ejecutarAcciones(RUTINA_SALUDO, turno);
       return;
     }
-    if (esPresentacion(texto)) { voz.turno++; robot('feliz'); textoVoz('¡Hola! Soy Demon 🤖', 'ok'); hablar(PRESENTACION); return; }
+    if (esPresentacion(texto)) { voz.turno++; robot('feliz'); textoVoz('Soy Demon, el asistente de voz de la excavadora 🤖', 'ok'); return; }
     if (ordenInmediata(texto)) return;                    // ya se ejecutó sin esperar a Gemini
     const turno = ++voz.turno;
     textoVoz(`“${texto}” · pensando…`);
@@ -610,10 +504,8 @@
       if (!acciones.length && (e.status === 503 || e.status === 502)) aviso(e.message, true);
     }
     if (turno !== voz.turno) return;
-    if (!acciones.length) { textoVoz(`No entendí: “${texto}”`, 'mal'); hablar('No te entendí, ¿me lo repites?'); return; }
+    if (!acciones.length) { textoVoz(`No entendí: “${texto}”`, 'mal'); return; }
     textoVoz(respuesta || acciones.map(a => bonito(a.comando)).join(' → '), 'ok');
-    voz.conRespuesta = true;                              // una sola confirmación para toda la secuencia
-    hablar(acciones.length === 1 && acciones[0].comando === 'DETENER' ? 'Okey, me detengo' : CONFIRMAR[Math.floor(Math.random() * CONFIRMAR.length)]);
     $('#lcd-info').textContent = ('VOZ ' + acciones[0].comando).slice(0, 14);
     ejecutarAcciones(acciones, turno);
   }
@@ -624,7 +516,7 @@
     rec.onresult = (ev) => {
       const r = ev.results[ev.results.length - 1];
       const t = r[0].transcript.trim();
-      if (!t || escuchandoseASiMismo()) return;              // es la voz de Demon, no una orden
+      if (!t) return;
       if (r.isFinal) procesarVoz(t);
       else if (!ordenInmediata(t)) textoVoz(t + '…', 'parcial');
     };
@@ -646,13 +538,11 @@
   }
 
   function alternarVoz() {
-    desbloquearAudio();
     if (voz.activa) { apagarVoz(); aviso('Control por voz apagado'); return; }
     if (!Reconocedor) { aviso('Este navegador no reconoce voz. Usa Safari o Chrome actualizados.', true); return; }
     voz.activa = true;
     $('#voz-barra').hidden = B.dataset.control === 'voz'; textoVoz('Te escucho… di una orden');
     robot('escucha');
-    hablar('Estoy esperando tu orden');                           // el primer toque también desbloquea el audio en iPhone
     $$('[data-accion="voz"]').forEach(b => { b.setAttribute('aria-pressed', 'true'); b.classList.add('activa'); });
     try { escuchar(); } catch (e) { aviso('No se pudo usar el micrófono', true); apagarVoz(); }
   }
@@ -669,11 +559,6 @@
     else if (acc === 'wifi') borrarWifi();
     else if (acc === 'voz') alternarVoz();
     else if (acc === 'robot-alto') { voz.turno++; robot('feliz'); textoVoz('Alto ✋', 'ok'); enviar('DETENER', 'toque'); }
-    else if (acc === 'robot-voz') {
-      voz.conVoz = !voz.conVoz; guardado('ctl.vozSimon', voz.conVoz ? 'si' : 'no');
-      a.setAttribute('aria-pressed', String(voz.conVoz)); a.textContent = voz.conVoz ? '🔊 VOZ' : '🔇 MUDO';
-      if (!voz.conVoz && sintesis) sintesis.cancel(); else hablar('Estoy esperando tu orden');
-    }
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarHoja(); });
 
