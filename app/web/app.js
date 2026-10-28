@@ -383,7 +383,18 @@
   // El navegador transcribe (Web Speech API, es-MX) y la API interpreta con Gemini (POST /voz/interpretar).
   // "Alto / para / frena" se resuelve aquí mismo, sin esperar a Gemini.
   const Reconocedor = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const FUNCIONES_TOQUE = new Set(['ENCENDER', 'LUCES', 'SONIDO']);
+  const FUNCIONES_TOQUE = new Set(['LUCES', 'SONIDO']);
+  const MANTENER_ENCENDER_MS = 2000;     // el botón de encendido del control se mantiene presionado
+
+  // Ejecuta una orden de voz igual que si se tocara el botón del panel
+  function ordenVoz(comando, modo) {
+    if (comando === 'ENCENDER') {
+      const b = botonDe('ENCENDER');
+      if (b) { presionarPad(b); setTimeout(() => { if (st.sostenido && st.sostenido.nombre === 'ENCENDER') soltarSostenido(); }, MANTENER_ENCENDER_MS); }
+      return dormir(MANTENER_ENCENDER_MS);
+    }
+    return enviar(comando, modo);
+  }
   const voz = { activa: false, rec: null, turno: 0, ultimaInmediata: '', ultimaInmediataEn: 0,
     conVoz: guardado('ctl.vozSimon') !== 'no', hablando: false, silencioHasta: 0 };
   const dormir = (ms) => new Promise(ok => setTimeout(ok, ms));
@@ -454,7 +465,7 @@
       [/(sube|levanta).*(brazo|pala)|(brazo|pala).*(arriba|sube)/, 'SUBIR_BRAZO'], [/(baja).*(brazo|pala)|(brazo|pala).*(abajo|baja)/, 'BAJAR_BRAZO'],
       [/(cabina|torre|rota).*izquierda/, 'ROTAR_IZQUIERDA'], [/(cabina|torre|rota).*derecha/, 'ROTAR_DERECHA'],
       [/izquierda/, 'GIRAR_IZQUIERDA'], [/derecha/, 'GIRAR_DERECHA'], [/(luz|luces)/, 'LUCES'], [/(claxon|sonido|pita)/, 'SONIDO'],
-      [/(enciende|prende|apaga)/, 'ENCENDER'], [/demo/, 'DEMO_FISICA'],
+      [/(encend|enciend|prend|apag)/, 'ENCENDER'], [/demo/, 'DEMO_FISICA'],
     ];
     const r = reglas.find(([re]) => re.test(n));
     return r ? [{ comando: r[1], segundos: 0 }] : [];
@@ -465,7 +476,7 @@
       if (turno !== voz.turno) return;                       // llegó otra orden de voz: esta se cancela
       if (!st.comandos.has(a.comando)) continue;
       robotMueve(a.comando, !voz.conRespuesta);
-      await enviar(a.comando, FUNCIONES_TOQUE.has(a.comando) ? 'toque' : 'continuo');
+      await ordenVoz(a.comando, FUNCIONES_TOQUE.has(a.comando) ? 'toque' : 'continuo');
       if (a.segundos > 0 && a.comando !== 'DETENER') {
         await dormir(a.segundos * 1000);
         if (turno === voz.turno) { robot('feliz'); await enviar('DETENER', 'toque'); }
@@ -488,7 +499,7 @@
     voz.ultimaInmediata = a.comando; voz.ultimaInmediataEn = Date.now();
     voz.turno++;
     robotMueve(a.comando);
-    enviar(a.comando, FUNCIONES_TOQUE.has(a.comando) || a.comando === 'DETENER' ? 'toque' : 'continuo');
+    ordenVoz(a.comando, FUNCIONES_TOQUE.has(a.comando) || a.comando === 'DETENER' ? 'toque' : 'continuo');
     textoVoz(a.comando === 'DETENER' ? 'Alto ✋' : bonito(a.comando), 'ok');
     $('#lcd-info').textContent = ('VOZ ' + a.comando).slice(0, 14);
     return true;
