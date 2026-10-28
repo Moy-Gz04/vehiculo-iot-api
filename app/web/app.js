@@ -450,12 +450,28 @@
   let vozSimon = null;
   function elegirVoz() {
     const vs = sintesis ? sintesis.getVoices().filter(v => /^es/i.test(v.lang)) : [];
+    llenarVoces(vs);
+    const elegida = guardado('ctl.vozNombre');
+    if (elegida) { const v = vs.find(x => x.name === elegida); if (v) { vozSimon = v; return; } }
     // Preferencia: voces naturales masculinas en español (iPhone: Juan; Chrome: Google; Windows: Raúl/Jorge)
     const PREF = [/juan/i, /jorge/i, /ra[uú]l/i, /diego/i, /google espa[nñ]ol de estados unidos/i, /google espa[nñ]ol/i, /enhanced|premium|mejorad/i];
     const mx = vs.filter(v => /es-(MX|US)/i.test(v.lang));
     vozSimon = PREF.map(re => mx.find(v => re.test(v.name)) || vs.find(v => re.test(v.name))).find(Boolean)
       || mx[0] || vs[0] || null;
   }
+  // Catálogo: todas las voces en español que trae este aparato (iPhone, Chrome o Windows tienen distintas)
+  function llenarVoces(vs) {
+    const sel = $('#robot-voces'); if (!sel) return;
+    const actual = guardado('ctl.vozNombre') || '';
+    sel.innerHTML = '<option value="">Automática</option>' + vs
+      .sort((a, b) => a.lang.localeCompare(b.lang) || a.name.localeCompare(b.name))
+      .map(v => `<option value="${esc(v.name)}" ${v.name === actual ? 'selected' : ''}>${esc(v.name.replace(/^(Microsoft|Google) /, ''))} · ${esc(v.lang)}</option>`).join('');
+  }
+  $('#robot-voces')?.addEventListener('change', (e) => {
+    guardado('ctl.vozNombre', e.target.value || null);
+    elegirVoz();
+    hablar('Hola, soy Demon. ¿Te gusta esta voz?');
+  });
   if (sintesis) { elegirVoz(); sintesis.onvoiceschanged = elegirVoz; }
   function hablar(texto) {
     if (!sintesis || !voz.conVoz || B.dataset.control !== 'voz' || !texto) return;
