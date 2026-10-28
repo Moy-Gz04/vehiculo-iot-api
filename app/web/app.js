@@ -74,11 +74,15 @@
   $$('[data-elegir]').forEach(b => b.addEventListener('click', () => usarControl(b.dataset.elegir)));
   async function usarControl(tipo) {
     B.dataset.control = tipo; guardado('ctl.control', tipo);
+    if (tipo !== 'voz' && voz.activa) apagarVoz();
     $('#marca-control').textContent = tipo === 'rc' ? 'RC · CLÁSICO' : 'GAMEPAD';
     $('#lcd-modo').textContent = tipo === 'rc' ? 'PULSO' : 'MANTENER';
-    $('#ayuda').textContent = tipo === 'rc'
-      ? 'Toca una acción: la excavadora sigue hasta que eliges otra o presionas ALTO.'
+    $('#ayuda').textContent = tipo === 'rc' ? 'Toca una acción: la excavadora sigue hasta que eliges otra o presionas ALTO.'
       : 'Mantén presionado un botón para moverte; al soltarlo se detiene.';
+    if (tipo === 'voz') {
+      robot('reposo');
+      const bv = $('.rp-voz'); if (bv) { bv.setAttribute('aria-pressed', String(voz.conVoz)); bv.textContent = voz.conVoz ? '🔊 VOZ' : '🔇 MUDO'; }
+    }
     if (!guardado('ctl.orient')) B.dataset.orient = esMovil() && innerHeight > innerWidth ? 'v' : 'h';
     actualizarTextoGirar();
     ir('control');
@@ -241,6 +245,7 @@
   }
   function pintarEnlace(on) {
     B.classList.toggle('en-linea', on);
+    const re = $('#robot-enlace'); if (re) re.textContent = on ? '● EN LÍNEA' : '○ SIN ENLACE';
     $('#lcd-enlace').textContent = on ? '● EN LÍNEA' : '○ SIN ENLACE';
   }
 
@@ -379,10 +384,68 @@
   // "Alto / para / frena" se resuelve aquí mismo, sin esperar a Gemini.
   const Reconocedor = window.SpeechRecognition || window.webkitSpeechRecognition;
   const FUNCIONES_TOQUE = new Set(['ENCENDER', 'LUCES', 'SONIDO']);
-  const voz = { activa: false, rec: null, turno: 0, ultimaInmediata: '', ultimaInmediataEn: 0 };
+  const voz = { activa: false, rec: null, turno: 0, ultimaInmediata: '', ultimaInmediataEn: 0,
+    conVoz: guardado('ctl.vozSimon') !== 'no', hablando: false, silencioHasta: 0 };
   const dormir = (ms) => new Promise(ok => setTimeout(ok, ms));
 
-  function textoVoz(t, clase = '') { const e = $('#voz-texto'); e.textContent = t; e.className = clase; }
+  function textoVoz(t, clase = '') {
+    const e = $('#voz-texto'); e.textContent = t; e.className = clase;
+    const g = $('#robot-dice'); if (g) { g.textContent = t; g.className = clase; }
+    if (clase === 'parcial') robot('escucha');
+    else if (clase === 'mal') robot('confundido');
+    else if (/pensando/.test(t)) robot('piensa');
+  }
+
+  // ---------- Robot Demon (control por voz) ----------
+  // Estados: reposo · escucha · piensa · mueve · feliz · confundido. Los ojos miran hacia el movimiento
+  // y en la ventana se enciende el optoacoplador de esa salida.
+  const MIRADA = { AVANZAR: 'arriba', SUBIR_BRAZO: 'arriba', RETROCEDER: 'abajo', BAJAR_BRAZO: 'abajo',
+    GIRAR_IZQUIERDA: 'izq', ROTAR_IZQUIERDA: 'izq', GIRAR_DERECHA: 'der', ROTAR_DERECHA: 'der' };
+  let robotT;
+  function robot(estado, comando = '') {
+    const r = $('#robot'); if (!r) return;
+    clearTimeout(robotT);
+    r.dataset.estado = estado;
+    r.dataset.mira = MIRADA[comando] || '';
+    const e = $('#robot-estado');
+    if (e) e.textContent = estado === 'mueve' || (estado === 'feliz' && comando) ? bonito(comando).toUpperCase()
+      : ({ reposo: 'EN ESPERA', escucha: 'ESCUCHANDO', piensa: 'PENSANDO', feliz: 'LISTO', confundido: 'NO ENTENDÍ' }[estado] || '');
+    $$('#robot .opto').forEach(o => o.classList.toggle('on', o.dataset.opto === comando));
+    if (estado === 'feliz' || estado === 'confundido') robotT = setTimeout(() => robot(voz.activa ? 'escucha' : 'reposo'), 2200);
+  }
+  function robotMueve(comando, decir = true) {
+    if (comando === 'DETENER') robot('feliz');
+    else if (MIRADA[comando]) robot('mueve', comando);
+    else robot('feliz', comando);
+    if (decir) hablar(comando === 'DETENER' ? 'Okey, me detengo' : CONFIRMAR[Math.floor(Math.random() * CONFIRMAR.length)]);
+  }
+
+  // ---------- Voz de Demon (síntesis del navegador: gratis y sin internet) ----------
+  // Mientras habla (y un momento después) se ignora el micrófono, para que no se escuche a sí mismo
+  // y tome "avanzando" como una orden nueva.
+  // Demon no narra cada movimiento: solo confirma, saluda y se presenta.
+  const CONFIRMAR = ['Okey, lo haré', 'Enseguida', 'Va, lo hago', 'Claro que sí'];
+  const PRESENTACION = 'Hola, soy Demon, el asistente de voz de la excavadora. Puedo avanzar, girar, subir y bajar el brazo, '
+    + 'prender las luces y mucho más. Solo dime qué hacer y yo me encargo.';
+  const esPresentacion = (t) => /(presentate|preséntate|quien eres|quién eres|como te llamas|cómo te llamas|que puedes hacer|qué puedes hacer)/i.test(t);
+  const sintesis = window.speechSynthesis;
+  let vozSimon = null;
+  function elegirVoz() {
+    const vs = sintesis ? sintesis.getVoices().filter(v => /^es/i.test(v.lang)) : [];
+    vozSimon = vs.find(v => /es-MX/i.test(v.lang)) || vs.find(v => /es-US/i.test(v.lang)) || vs[0] || null;
+  }
+  if (sintesis) { elegirVoz(); sintesis.onvoiceschanged = elegirVoz; }
+  function hablar(texto) {
+    if (!sintesis || !voz.conVoz || B.dataset.control !== 'voz' || !texto) return;
+    sintesis.cancel();
+    const u = new SpeechSynthesisUtterance(texto.replace(/[“”✋→]/g, ''));
+    u.lang = 'es-MX'; if (vozSimon) u.voice = vozSimon;
+    u.pitch = 1.6; u.rate = 1.08; u.volume = 1;
+    voz.hablando = true;
+    u.onend = u.onerror = () => { voz.silencioHasta = Date.now() + 700; voz.hablando = false; };
+    sintesis.speak(u);
+  }
+  const escuchandoseASiMismo = () => voz.hablando || Date.now() < voz.silencioHasta;
 
   function interpretarLocal(t) {      // respaldo si el servidor no tiene Gemini o no responde
     const n = t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -401,12 +464,14 @@
     for (const a of acciones) {
       if (turno !== voz.turno) return;                       // llegó otra orden de voz: esta se cancela
       if (!st.comandos.has(a.comando)) continue;
+      robotMueve(a.comando, !voz.conRespuesta);
       await enviar(a.comando, FUNCIONES_TOQUE.has(a.comando) ? 'toque' : 'continuo');
       if (a.segundos > 0 && a.comando !== 'DETENER') {
         await dormir(a.segundos * 1000);
-        if (turno === voz.turno) await enviar('DETENER', 'toque');
+        if (turno === voz.turno) { robot('feliz'); await enviar('DETENER', 'toque'); }
       }
     }
+    voz.conRespuesta = false;
   }
 
   // Frase compuesta o con tiempo ("dos segundos", "y luego") -> la interpreta Gemini.
@@ -415,12 +480,14 @@
 
   // Se llama con cada pedazo que va reconociendo el navegador, antes de que termines de hablar
   function ordenInmediata(texto) {
+    if (esPresentacion(texto)) return false;
     if (esCompuesta(texto) || texto.split(/\s+/).length > 4) return false;
     const [a] = interpretarLocal(texto);
     if (!a || !st.comandos.has(a.comando)) return false;
     if (a.comando === voz.ultimaInmediata && Date.now() - voz.ultimaInmediataEn < 2500) return true;  // ya se mandó
     voz.ultimaInmediata = a.comando; voz.ultimaInmediataEn = Date.now();
     voz.turno++;
+    robotMueve(a.comando);
     enviar(a.comando, FUNCIONES_TOQUE.has(a.comando) || a.comando === 'DETENER' ? 'toque' : 'continuo');
     textoVoz(a.comando === 'DETENER' ? 'Alto ✋' : bonito(a.comando), 'ok');
     $('#lcd-info').textContent = ('VOZ ' + a.comando).slice(0, 14);
@@ -428,6 +495,7 @@
   }
 
   async function procesarVoz(texto) {
+    if (esPresentacion(texto)) { voz.turno++; robot('feliz'); textoVoz('¡Hola! Soy Demon 🤖', 'ok'); hablar(PRESENTACION); return; }
     if (ordenInmediata(texto)) return;                    // ya se ejecutó sin esperar a Gemini
     const turno = ++voz.turno;
     textoVoz(`“${texto}” · pensando…`);
@@ -443,8 +511,10 @@
       if (!acciones.length && (e.status === 503 || e.status === 502)) aviso(e.message, true);
     }
     if (turno !== voz.turno) return;
-    if (!acciones.length) { textoVoz(`No entendí: “${texto}”`, 'mal'); return; }
+    if (!acciones.length) { textoVoz(`No entendí: “${texto}”`, 'mal'); hablar('No te entendí, ¿me lo repites?'); return; }
     textoVoz(respuesta || acciones.map(a => bonito(a.comando)).join(' → '), 'ok');
+    voz.conRespuesta = true;                              // una sola confirmación para toda la secuencia
+    hablar(acciones.length === 1 && acciones[0].comando === 'DETENER' ? 'Okey, me detengo' : CONFIRMAR[Math.floor(Math.random() * CONFIRMAR.length)]);
     $('#lcd-info').textContent = ('VOZ ' + acciones[0].comando).slice(0, 14);
     ejecutarAcciones(acciones, turno);
   }
@@ -455,7 +525,7 @@
     rec.onresult = (ev) => {
       const r = ev.results[ev.results.length - 1];
       const t = r[0].transcript.trim();
-      if (!t) return;
+      if (!t || escuchandoseASiMismo()) return;              // es la voz de Demon, no una orden
       if (r.isFinal) procesarVoz(t);
       else if (!ordenInmediata(t)) textoVoz(t + '…', 'parcial');
     };
@@ -472,6 +542,7 @@
     try { voz.rec && voz.rec.stop(); } catch { /* ya detenido */ }
     voz.rec = null;
     $('#voz-barra').hidden = true;
+    robot('reposo'); textoVoz('En espera');
     $$('[data-accion="voz"]').forEach(b => { b.setAttribute('aria-pressed', 'false'); b.classList.remove('activa'); });
   }
 
@@ -479,7 +550,9 @@
     if (voz.activa) { apagarVoz(); aviso('Control por voz apagado'); return; }
     if (!Reconocedor) { aviso('Este navegador no reconoce voz. Usa Safari o Chrome actualizados.', true); return; }
     voz.activa = true;
-    $('#voz-barra').hidden = false; textoVoz('Escuchando… di una orden');
+    $('#voz-barra').hidden = B.dataset.control === 'voz'; textoVoz('Te escucho… di una orden');
+    robot('escucha');
+    hablar('Estoy esperando tu orden');                           // el primer toque también desbloquea el audio en iPhone
     $$('[data-accion="voz"]').forEach(b => { b.setAttribute('aria-pressed', 'true'); b.classList.add('activa'); });
     try { escuchar(); } catch (e) { aviso('No se pudo usar el micrófono', true); apagarVoz(); }
   }
@@ -495,6 +568,12 @@
     else if (acc === 'cerrar-hoja') cerrarHoja();
     else if (acc === 'wifi') borrarWifi();
     else if (acc === 'voz') alternarVoz();
+    else if (acc === 'robot-alto') { voz.turno++; robot('feliz'); textoVoz('Alto ✋', 'ok'); enviar('DETENER', 'toque'); }
+    else if (acc === 'robot-voz') {
+      voz.conVoz = !voz.conVoz; guardado('ctl.vozSimon', voz.conVoz ? 'si' : 'no');
+      a.setAttribute('aria-pressed', String(voz.conVoz)); a.textContent = voz.conVoz ? '🔊 VOZ' : '🔇 MUDO';
+      if (!voz.conVoz && sintesis) sintesis.cancel(); else hablar('Estoy esperando tu orden');
+    }
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarHoja(); });
 
