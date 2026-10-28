@@ -692,3 +692,6 @@ body[data-pantalla="control"][data-control="voz"] {
   background-attachment: fixed;
 }
 body[data-control="voz"] .robot-sombra { background: radial-gradient(closest-side, rgba(20, 24, 32, .45), transparent); }
+
+.rp-voces { display: flex; align-items: center; gap: 8px; margin-top: 10px; font: 700 10px var(--mono); letter-spacing: .12em; color: var(--plata-3); }
+.rp-voces select { flex: 1; min-width: 0; padding: 6px 8px; border-radius: 8px; border: 1px solid #1d2b4f; background: #0a1430; color: #dbe6ff; font: 600 13px var(--mono); }
