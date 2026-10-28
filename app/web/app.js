@@ -356,6 +356,24 @@
     }
   }
 
+  // ---------- Borrar el Wi-Fi guardado en la excavadora ----------
+  // El ESP32 recibe RESET_WIFI, borra sus credenciales (WiFiManager) y abre la red
+  // EXCAVADORA-XXXXXX para configurarla desde el teléfono. Si el comando aún no existe
+  // en el catálogo del vehículo, se crea aquí con la misma X-API-Key de la sesión.
+  async function borrarWifi() {
+    if (!confirm('¿Borrar el Wi-Fi guardado en la excavadora?\n\nSe reiniciará y abrirá la red EXCAVADORA-XXXXXX (clave Excavadora2026). Desde el teléfono entra a http://192.168.4.1 para elegir la nueva red. Mientras tanto se desconecta de este panel.')) return;
+    try {
+      if (!st.comandos.has('RESET_WIFI')) {
+        await post(`/vehiculos/${st.idV}/comandos`, { nombre: 'RESET_WIFI', codigo: 99, descripcion: 'Borra el Wi-Fi guardado en el ESP32 y abre su portal de configuración' });
+        const d = await pedir(`/vehiculos/${st.idV}/detalle`);
+        st.comandos = new Map(d.comandos.map(c => [c.nombre, c]));
+      }
+      await enviar('RESET_WIFI', 'toque');
+      $('#lcd-info').textContent = 'WIFI BORRADO';
+      aviso('Listo: la excavadora borró su Wi-Fi. Conéctate a la red EXCAVADORA-… para configurarla.');
+    } catch (e) { aviso(e.message, true); }
+  }
+
   // ---------- Acciones generales ----------
   document.addEventListener('click', (ev) => {
     const a = ev.target.closest('[data-accion]'); if (!a) return;
@@ -365,6 +383,7 @@
     else if (acc === 'girar') girar();
     else if (acc === 'hoja') abrirHoja(a.dataset.tab);
     else if (acc === 'cerrar-hoja') cerrarHoja();
+    else if (acc === 'wifi') borrarWifi();
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarHoja(); });
 
