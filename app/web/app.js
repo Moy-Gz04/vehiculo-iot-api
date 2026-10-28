@@ -439,13 +439,13 @@
   const PRESENTACION = 'Hola, soy Demon, el asistente de voz de la excavadora. Puedo avanzar, girar, subir y bajar el brazo, '
     + 'prender las luces y mucho más. Solo dime qué hacer y yo me encargo.';
   // Rutina "saluda": dice hola mientras sube la pala, rota izq → der → izq y baja el brazo.
-  // Los segundos de cada paso se ajustan aquí (la pala tarda ~2.5 s en llegar arriba).
+  // Los segundos de cada paso se ajustan aquí.
   const RUTINA_SALUDO = [
-    { comando: 'SUBIR_BRAZO', segundos: 2.5 },
-    { comando: 'ROTAR_IZQUIERDA', segundos: 1.2 },
-    { comando: 'ROTAR_DERECHA', segundos: 2.4 },
-    { comando: 'ROTAR_IZQUIERDA', segundos: 1.2 },
-    { comando: 'BAJAR_BRAZO', segundos: 2.5 },
+    { comando: 'SUBIR_BRAZO', segundos: 1 },
+    { comando: 'ROTAR_IZQUIERDA', segundos: 0.2 },
+    { comando: 'ROTAR_DERECHA', segundos: 0.4 },     // el doble: cruza el centro hacia la derecha
+    { comando: 'ROTAR_IZQUIERDA', segundos: 0.2 },   // regresa al centro
+    { comando: 'BAJAR_BRAZO', segundos: 1 },
   ];
   const esSaludo = (t) => /\b(saluda|saludo|saludar|salude|saludame|salúdame|di hola)\b/i.test(t);
   const esPresentacion = (t) => /(presentate|preséntate|quien eres|quién eres|como te llamas|cómo te llamas|que puedes hacer|qué puedes hacer)/i.test(t);
