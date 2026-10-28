@@ -7,6 +7,7 @@ de Gemini vive en el servidor (.env → GEMINI_API_KEY), nunca en la página.
 import asyncio
 import json
 import os
+import ssl
 import urllib.error
 import urllib.request
 from typing import Optional
@@ -17,6 +18,13 @@ from pydantic import BaseModel, Field
 from app.dependencias import requiere_api_key
 
 voz = APIRouter(prefix="/voz", tags=["Voz"])
+
+# Windows en EC2 no siempre tiene los certificados raíz de Google: se usa el paquete certifi si está.
+try:
+    import certifi
+    CONTEXTO_SSL = ssl.create_default_context(cafile=certifi.where())
+except ImportError:
+    CONTEXTO_SSL = ssl.create_default_context()
 
 MODELO = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 URL = "https://generativelanguage.googleapis.com/v1beta/models/{modelo}:generateContent"
@@ -75,7 +83,7 @@ def _preguntar_gemini(texto: str, clave: str) -> dict:
     }
     req = urllib.request.Request(URL.format(modelo=MODELO), data=json.dumps(cuerpo).encode(),
                                  headers={"Content-Type": "application/json", "x-goog-api-key": clave})
-    with urllib.request.urlopen(req, timeout=12) as r:
+    with urllib.request.urlopen(req, timeout=12, context=CONTEXTO_SSL) as r:
         datos = json.load(r)
     return json.loads(datos["candidates"][0]["content"]["parts"][0]["text"])
 
