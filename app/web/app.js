@@ -379,7 +379,7 @@
   // "Alto / para / frena" se resuelve aquí mismo, sin esperar a Gemini.
   const Reconocedor = window.SpeechRecognition || window.webkitSpeechRecognition;
   const FUNCIONES_TOQUE = new Set(['ENCENDER', 'LUCES', 'SONIDO']);
-  const voz = { activa: false, rec: null, turno: 0 };
+  const voz = { activa: false, rec: null, turno: 0, ultimaInmediata: '', ultimaInmediataEn: 0 };
   const dormir = (ms) => new Promise(ok => setTimeout(ok, ms));
 
   function textoVoz(t, clase = '') { const e = $('#voz-texto'); e.textContent = t; e.className = clase; }
@@ -409,9 +409,28 @@
     }
   }
 
+  // Frase compuesta o con tiempo ("dos segundos", "y luego") -> la interpreta Gemini.
+  // Frase simple ("avanza", "sube el brazo", "alto") -> se ejecuta al instante aquí mismo.
+  const esCompuesta = (t) => /\b(y|luego|despues|después|segundo|segundos|poquito|rato|veces|mientras)\b|\d/i.test(t);
+
+  // Se llama con cada pedazo que va reconociendo el navegador, antes de que termines de hablar
+  function ordenInmediata(texto) {
+    if (esCompuesta(texto) || texto.split(/\s+/).length > 4) return false;
+    const [a] = interpretarLocal(texto);
+    if (!a || !st.comandos.has(a.comando)) return false;
+    if (a.comando === voz.ultimaInmediata && Date.now() - voz.ultimaInmediataEn < 2500) return true;  // ya se mandó
+    voz.ultimaInmediata = a.comando; voz.ultimaInmediataEn = Date.now();
+    voz.turno++;
+    enviar(a.comando, FUNCIONES_TOQUE.has(a.comando) || a.comando === 'DETENER' ? 'toque' : 'continuo');
+    textoVoz(a.comando === 'DETENER' ? 'Alto ✋' : bonito(a.comando), 'ok');
+    $('#lcd-info').textContent = ('VOZ ' + a.comando).slice(0, 14);
+    return true;
+  }
+
   async function procesarVoz(texto) {
+    if (ordenInmediata(texto)) return;                    // ya se ejecutó sin esperar a Gemini
     const turno = ++voz.turno;
-    textoVoz(`“${texto}”`);
+    textoVoz(`“${texto}” · pensando…`);
     if (/\b(alto|para|frena|detente|quieto|stop)\b/i.test(texto) && texto.split(/\s+/).length <= 3) {
       await enviar('DETENER', 'toque'); textoVoz('Alto ✋'); return;
     }
@@ -437,7 +456,8 @@
       const r = ev.results[ev.results.length - 1];
       const t = r[0].transcript.trim();
       if (!t) return;
-      if (r.isFinal) procesarVoz(t); else textoVoz(t + '…', 'parcial');
+      if (r.isFinal) procesarVoz(t);
+      else if (!ordenInmediata(t)) textoVoz(t + '…', 'parcial');
     };
     rec.onerror = (ev) => {
       if (ev.error === 'not-allowed' || ev.error === 'service-not-allowed') { aviso('Permite el micrófono para usar la voz', true); apagarVoz(); }
