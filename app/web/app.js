@@ -438,22 +438,23 @@
   const CONFIRMAR = ['Okey, lo haré', 'Enseguida', 'Va, lo hago', 'Claro que sí'];
   const PRESENTACION = 'Hola, soy Demon, el asistente de voz de la excavadora. Puedo avanzar, girar, subir y bajar el brazo, '
     + 'prender las luces y mucho más. Solo dime qué hacer y yo me encargo.';
-  // Rutina "saluda": dice hola mientras sube la pala, rota izq → der → izq y baja el brazo.
+  // Rutina "saluda": se presenta mientras sube la pala.
   // Los segundos de cada paso se ajustan aquí.
   const RUTINA_SALUDO = [
-    { comando: 'SUBIR_BRAZO', segundos: 1 },
-    { comando: 'ROTAR_IZQUIERDA', segundos: 0.2 },
-    { comando: 'ROTAR_DERECHA', segundos: 0.4 },     // el doble: cruza el centro hacia la derecha
-    { comando: 'ROTAR_IZQUIERDA', segundos: 0.2 },   // regresa al centro
-    { comando: 'BAJAR_BRAZO', segundos: 1 },
+    { comando: 'SUBIR_BRAZO', segundos: 1.5 },
   ];
+  const FRASE_SALUDO = 'Hola, soy Demon. Puedo moverme, ¡miraaa! Puedes decirme qué hacer.';
   const esSaludo = (t) => /\b(saluda|saludo|saludar|salude|saludame|salúdame|di hola)\b/i.test(t);
   const esPresentacion = (t) => /(presentate|preséntate|quien eres|quién eres|como te llamas|cómo te llamas|que puedes hacer|qué puedes hacer)/i.test(t);
   const sintesis = window.speechSynthesis;
   let vozSimon = null;
   function elegirVoz() {
     const vs = sintesis ? sintesis.getVoices().filter(v => /^es/i.test(v.lang)) : [];
-    vozSimon = vs.find(v => /es-MX/i.test(v.lang)) || vs.find(v => /es-US/i.test(v.lang)) || vs[0] || null;
+    // Preferencia: voces naturales masculinas en español (iPhone: Juan; Chrome: Google; Windows: Raúl/Jorge)
+    const PREF = [/juan/i, /jorge/i, /ra[uú]l/i, /diego/i, /google espa[nñ]ol de estados unidos/i, /google espa[nñ]ol/i, /enhanced|premium|mejorad/i];
+    const mx = vs.filter(v => /es-(MX|US)/i.test(v.lang));
+    vozSimon = PREF.map(re => mx.find(v => re.test(v.name)) || vs.find(v => re.test(v.name))).find(Boolean)
+      || mx[0] || vs[0] || null;
   }
   if (sintesis) { elegirVoz(); sintesis.onvoiceschanged = elegirVoz; }
   function hablar(texto) {
@@ -461,7 +462,7 @@
     sintesis.cancel();
     const u = new SpeechSynthesisUtterance(texto.replace(/[“”✋→]/g, ''));
     u.lang = 'es-MX'; if (vozSimon) u.voice = vozSimon;
-    u.pitch = 1.6; u.rate = 1.08; u.volume = 1;
+    u.pitch = 0.95; u.rate = 1; u.volume = 1;
     voz.hablando = true;
     u.onend = u.onerror = () => { voz.silencioHasta = Date.now() + 700; voz.hablando = false; };
     sintesis.speak(u);
@@ -520,7 +521,7 @@
       const turno = ++voz.turno;
       robot('feliz'); textoVoz('¡Hola! Soy Demon 👋', 'ok');
       voz.conRespuesta = true;                           // ya habló: no confirmar cada paso
-      hablar('Hola, soy Demon');
+      hablar(FRASE_SALUDO);
       ejecutarAcciones(RUTINA_SALUDO, turno);
       return;
     }
