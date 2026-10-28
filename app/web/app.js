@@ -438,6 +438,16 @@
   const CONFIRMAR = ['Okey, lo haré', 'Enseguida', 'Va, lo hago', 'Claro que sí'];
   const PRESENTACION = 'Hola, soy Demon, el asistente de voz de la excavadora. Puedo avanzar, girar, subir y bajar el brazo, '
     + 'prender las luces y mucho más. Solo dime qué hacer y yo me encargo.';
+  // Rutina "saluda": dice hola mientras sube la pala, rota izq → der → izq y baja el brazo.
+  // Los segundos de cada paso se ajustan aquí (la pala tarda ~2.5 s en llegar arriba).
+  const RUTINA_SALUDO = [
+    { comando: 'SUBIR_BRAZO', segundos: 2.5 },
+    { comando: 'ROTAR_IZQUIERDA', segundos: 1.2 },
+    { comando: 'ROTAR_DERECHA', segundos: 2.4 },
+    { comando: 'ROTAR_IZQUIERDA', segundos: 1.2 },
+    { comando: 'BAJAR_BRAZO', segundos: 2.5 },
+  ];
+  const esSaludo = (t) => /\b(saluda|saludo|saludar|salude|saludame|salúdame|di hola)\b/i.test(t);
   const esPresentacion = (t) => /(presentate|preséntate|quien eres|quién eres|como te llamas|cómo te llamas|que puedes hacer|qué puedes hacer)/i.test(t);
   const sintesis = window.speechSynthesis;
   let vozSimon = null;
@@ -491,7 +501,7 @@
 
   // Se llama con cada pedazo que va reconociendo el navegador, antes de que termines de hablar
   function ordenInmediata(texto) {
-    if (esPresentacion(texto)) return false;
+    if (esPresentacion(texto) || esSaludo(texto)) return false;
     if (esCompuesta(texto) || texto.split(/\s+/).length > 4) return false;
     const [a] = interpretarLocal(texto);
     if (!a || !st.comandos.has(a.comando)) return false;
@@ -506,6 +516,14 @@
   }
 
   async function procesarVoz(texto) {
+    if (esSaludo(texto)) {
+      const turno = ++voz.turno;
+      robot('feliz'); textoVoz('¡Hola! Soy Demon 👋', 'ok');
+      voz.conRespuesta = true;                           // ya habló: no confirmar cada paso
+      hablar('Hola, soy Demon');
+      ejecutarAcciones(RUTINA_SALUDO, turno);
+      return;
+    }
     if (esPresentacion(texto)) { voz.turno++; robot('feliz'); textoVoz('¡Hola! Soy Demon 🤖', 'ok'); hablar(PRESENTACION); return; }
     if (ordenInmediata(texto)) return;                    // ya se ejecutó sin esperar a Gemini
     const turno = ++voz.turno;
