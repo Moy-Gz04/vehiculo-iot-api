@@ -440,7 +440,7 @@
       acciones = r.acciones; respuesta = r.respuesta;
     } catch (e) {
       acciones = interpretarLocal(texto); respuesta = acciones.length ? bonito(acciones[0].comando) + ' (sin Gemini)' : '';
-      if (e.status === 503 || e.status === 502) aviso(e.message, true);
+      if (!acciones.length && (e.status === 503 || e.status === 502)) aviso(e.message, true);
     }
     if (turno !== voz.turno) return;
     if (!acciones.length) { textoVoz(`No entendí: “${texto}”`, 'mal'); return; }

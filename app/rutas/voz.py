@@ -26,7 +26,12 @@ try:
 except ImportError:
     CONTEXTO_SSL = ssl.create_default_context()
 
-MODELO = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
+# Primero el modelo del .env; si está saturado (503/429) o no existe (404), prueba los siguientes.
+MODELOS = list(dict.fromkeys(m.strip() for m in (
+    os.getenv("GEMINI_MODEL", "gemini-3.8-flash") + "," +
+    os.getenv("GEMINI_MODELOS_RESPALDO", "gemini-3.8-flash-lite,gemini-flash-latest,gemini-flash-lite-latest")
+).split(",") if m.strip()))
+REINTENTABLES = {404, 429, 500, 503}
 URL = "https://generativelanguage.googleapis.com/v1beta/models/{modelo}:generateContent"
 
 INSTRUCCIONES = """Eres el intérprete de voz de una retroexcavadora a control remoto.
@@ -74,15 +79,15 @@ class InterpretacionVoz(BaseModel):
     detalle: Optional[str] = None
 
 
-def _preguntar_gemini(texto: str, clave: str) -> dict:
+def _preguntar_gemini(texto: str, clave: str, modelo: str) -> dict:
     cuerpo = {
         "systemInstruction": {"parts": [{"text": INSTRUCCIONES}]},
         "contents": [{"role": "user", "parts": [{"text": texto}]}],
         "generationConfig": {"temperature": 0, "responseMimeType": "application/json", "responseSchema": ESQUEMA},
     }
-    req = urllib.request.Request(URL.format(modelo=MODELO), data=json.dumps(cuerpo).encode(),
+    req = urllib.request.Request(URL.format(modelo=modelo), data=json.dumps(cuerpo).encode(),
                                  headers={"Content-Type": "application/json", "x-goog-api-key": clave})
-    with urllib.request.urlopen(req, timeout=12, context=CONTEXTO_SSL) as r:
+    with urllib.request.urlopen(req, timeout=8, context=CONTEXTO_SSL) as r:
         datos = json.load(r)
     return json.loads(datos["candidates"][0]["content"]["parts"][0]["text"])
 
@@ -95,13 +100,20 @@ async def interpretar(frase: FraseVoz):
     clave = os.getenv("GEMINI_API_KEY", "")
     if not clave:
         raise HTTPException(503, "Falta GEMINI_API_KEY en el .env del servidor")
-    try:
-        r = await asyncio.to_thread(_preguntar_gemini, frase.texto, clave)
-    except urllib.error.HTTPError as ex:
-        cuerpo = ex.read().decode(errors="replace")[:300]
-        raise HTTPException(502, f"Gemini respondió {ex.code}: {cuerpo}")
-    except Exception as ex:  # red caída, tiempo agotado o respuesta inesperada
-        raise HTTPException(502, f"No se pudo consultar a Gemini: {ex}")
+    r, usado, ultimo_error = None, "", ""
+    for modelo in MODELOS:
+        try:
+            r = await asyncio.to_thread(_preguntar_gemini, frase.texto, clave, modelo)
+            usado = modelo
+            break
+        except urllib.error.HTTPError as ex:
+            ultimo_error = f"{modelo} respondió {ex.code}"
+            if ex.code not in REINTENTABLES:      # clave inválida, petición mal formada: no tiene caso seguir
+                raise HTTPException(502, f"Gemini {ultimo_error}: {ex.read().decode(errors='replace')[:200]}")
+        except Exception as ex:  # red caída, tiempo agotado o respuesta inesperada
+            ultimo_error = f"{modelo}: {ex}"
+    if r is None:
+        raise HTTPException(503, f"Gemini ocupado ({ultimo_error}). Se usó el intérprete local.")
     acciones = [AccionVoz(comando=a["comando"], segundos=max(0, min(float(a.get("segundos") or 0), 30)))
                 for a in r.get("acciones", [])][:6]
-    return InterpretacionVoz(texto=frase.texto, acciones=acciones, respuesta=r.get("respuesta", "")[:60], motor=MODELO)
+    return InterpretacionVoz(texto=frase.texto, acciones=acciones, respuesta=r.get("respuesta", "")[:60], motor=usado)
