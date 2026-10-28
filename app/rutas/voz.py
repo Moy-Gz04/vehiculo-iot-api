@@ -78,8 +78,7 @@ def _preguntar_gemini(texto: str, clave: str) -> dict:
     cuerpo = {
         "systemInstruction": {"parts": [{"text": INSTRUCCIONES}]},
         "contents": [{"role": "user", "parts": [{"text": texto}]}],
-        "generationConfig": {"temperature": 0, "responseMimeType": "application/json", "responseSchema": ESQUEMA,
-                             "thinkingConfig": {"thinkingBudget": 0}},
+        "generationConfig": {"temperature": 0, "responseMimeType": "application/json", "responseSchema": ESQUEMA},
     }
     req = urllib.request.Request(URL.format(modelo=MODELO), data=json.dumps(cuerpo).encode(),
                                  headers={"Content-Type": "application/json", "x-goog-api-key": clave})
