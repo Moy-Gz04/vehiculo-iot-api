@@ -472,6 +472,7 @@
       .map(v => `<option value="${esc(v.name)}" ${v.name === actual ? 'selected' : ''}>${esc(v.name.replace(/^(Microsoft|Google) /, ''))} · ${esc(v.lang)}</option>`).join('') + '</optgroup>';
   }
   $('#robot-voces')?.addEventListener('change', (e) => {
+    desbloquearAudio();
     guardado('ctl.vozNombre', e.target.value);
     elegirVoz(); precargarVozIA();
     hablar('Hola, soy Demon. ¿Te gusta esta voz?');
@@ -480,6 +481,14 @@
   // Voz IA (Gemini en el servidor): si la voz elegida empieza con "ia:" se pide el audio a /voz/hablar.
   // Si falla, se usa la voz del aparato para que Demon nunca se quede callado.
   const audioDemon = new Audio();
+  audioDemon.preload = 'auto'; audioDemon.setAttribute('playsinline', '');
+  const SILENCIO = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+  let audioListo = false;
+  function desbloquearAudio() {           // iOS solo deja sonar audio después de un toque: se "abre" aquí
+    if (audioListo) return;
+    audioDemon.src = SILENCIO;
+    audioDemon.play().then(() => { audioListo = true; }).catch(() => {});
+  }
   const audiosIA = new Map();
   function vozIA() { const v = guardado('ctl.vozNombre') ?? 'ia:Puck'; return v.startsWith('ia:') ? v.slice(3) : null; }
   async function hablarIA(texto, nombre) {
@@ -492,9 +501,13 @@
       url = URL.createObjectURL(await r.blob()); audiosIA.set(llave, url);
     }
     voz.hablando = true;
+    try { voz.rec && voz.rec.stop(); } catch { /* ya detenido */ }
     audioDemon.src = url;
-    audioDemon.onended = audioDemon.onerror = () => { voz.silencioHasta = Date.now() + 700; voz.hablando = false; };
-    await audioDemon.play();
+    audioDemon.onended = audioDemon.onerror = () => {
+      voz.silencioHasta = Date.now() + 500; voz.hablando = false;
+      if (voz.activa && voz.rec) setTimeout(() => { try { voz.rec.start(); } catch { /* ya iniciado */ } }, 300);
+    };
+    try { await audioDemon.play(); } catch (e) { voz.hablando = false; if (voz.activa && voz.rec) try { voz.rec.start(); } catch { /* */ } throw e; }
   }
   function hablar(texto) {
     if (!voz.conVoz || B.dataset.control !== 'voz' || !texto) return;
@@ -616,7 +629,7 @@
     rec.onerror = (ev) => {
       if (ev.error === 'not-allowed' || ev.error === 'service-not-allowed') { aviso('Permite el micrófono para usar la voz', true); apagarVoz(); }
     };
-    rec.onend = () => { if (voz.activa) setTimeout(() => { if (voz.activa) try { rec.start(); } catch { /* ya iniciado */ } }, 250); };
+    rec.onend = () => { if (voz.activa && !voz.hablando) setTimeout(() => { if (voz.activa && !voz.hablando) try { rec.start(); } catch { /* ya iniciado */ } }, 250); };
     voz.rec = rec;
     rec.start();
   }
@@ -631,6 +644,7 @@
   }
 
   function alternarVoz() {
+    desbloquearAudio();
     if (voz.activa) { apagarVoz(); aviso('Control por voz apagado'); return; }
     if (!Reconocedor) { aviso('Este navegador no reconoce voz. Usa Safari o Chrome actualizados.', true); return; }
     voz.activa = true;
