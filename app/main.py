@@ -7,7 +7,10 @@ import logging
 from pathlib import Path
 
 import pymysql
+import os
+
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -17,6 +20,7 @@ from app.errores import ErrorNegocio
 from app.rutas.demos import demos
 from app.rutas.estado import estado, historial
 from app.rutas.portal import portal_api
+from app.rutas.salud import salud
 from app.rutas.vehiculos import comandos, vehiculos
 from app.rutas.voz import voz
 from app.rutas.ws import ws_router
@@ -37,8 +41,18 @@ app = FastAPI(
 def documentacion():
     return pagina_docs(app.openapi_url, app.title)
 
-for r in (vehiculos, comandos, estado, historial, demos, voz, ws_router, portal_api):
+for r in (vehiculos, comandos, estado, historial, demos, voz, ws_router, portal_api, salud):
     app.include_router(r)
+
+# CORS: solo el frontend de CONTROL publicado en GitHub Pages (y los que se agreguen en CORS_ORIGENES).
+# CORS no es autenticación: las operaciones de control siguen pidiendo X-API-Key.
+ORIGENES = [o.strip() for o in os.getenv("CORS_ORIGENES", "https://moy-gz04.github.io").split(",") if o.strip()]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ORIGENES,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type", "X-API-Key"],
+)
 
 # Portal del proyecto (API, simulador, control y guía del examen) y control remoto web, mismo origen que la API
 app.mount("/portal", StaticFiles(directory=Path(__file__).parent / "web" / "portal", html=True), name="portal")
