@@ -58,13 +58,21 @@ app.add_middleware(
 app.mount("/portal", StaticFiles(directory=Path(__file__).parent / "web" / "portal", html=True), name="portal")
 app.mount("/control", StaticFiles(directory=Path(__file__).parent / "web", html=True), name="control")
 
+# Plataforma CONTROL + MONITOREO (práctica 4.2): el mismo repositorio que se publica en GitHub Pages
+# (github.com/Moy-Gz04/vehiculo-iot-control), clonado en el EC2. Solo archivos estáticos: no agrega servicios.
+PLATAFORMA = Path(os.getenv("PLATAFORMA_DIR", r"C:\vehiculo_iot_control"))
+if PLATAFORMA.is_dir():
+    app.mount("/plataforma", StaticFiles(directory=PLATAFORMA, html=True), name="plataforma")
+else:
+    log.info("Plataforma no encontrada en %s (opcional): /plataforma no se publica", PLATAFORMA)
+
 
 @app.middleware("http")
 async def sin_cache_web(request: Request, call_next):
     """El portal, el control y el simulador se revisan en cada visita: así una versión nueva
     aparece al recargar, sin que el navegador siga mostrando la copia que guardó."""
     respuesta = await call_next(request)
-    if request.url.path.startswith(("/control", "/portal")) and not request.url.path.startswith("/portal/api"):
+    if request.url.path.startswith(("/control", "/portal", "/plataforma")) and not request.url.path.startswith("/portal/api"):
         respuesta.headers["Cache-Control"] = "no-cache"
     return respuesta
 
@@ -72,6 +80,11 @@ async def sin_cache_web(request: Request, call_next):
 @app.get("/control", include_in_schema=False)
 def control():
     return RedirectResponse("/control/")
+
+
+@app.get("/plataforma", include_in_schema=False)
+def plataforma():
+    return RedirectResponse("/plataforma/")
 
 
 @app.get("/portal", include_in_schema=False)

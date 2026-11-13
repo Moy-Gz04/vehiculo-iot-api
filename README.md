@@ -156,3 +156,15 @@ Un mensaje enviado no significa que el vehículo físico lo ejecutó: la confirm
    y reenvía todo a `localhost:8000` (incluido el WebSocket). El dominio se forma con la IP elástica en
    `sslip.io` (por ejemplo `13-218-5-111.sslip.io`). En el Security Group del EC2 se abren **TCP 80 y 443**.
 5. Prueba desde fuera: `https://13-218-5-111.sslip.io/docs`, `https://13-218-5-111.sslip.io/control/simulador.html` y `wss://13-218-5-111.sslip.io/ws/vehiculos/1`.
+
+## Plataforma CONTROL + MONITOREO en el EC2 (práctica 4.2)
+
+La API también sirve, como archivos estáticos, el frontend de [vehiculo-iot-control](https://github.com/Moy-Gz04/vehiculo-iot-control)
+en `https://13-218-5-111.sslip.io/plataforma/` (mismo código que GitHub Pages). No agrega servicios a la API ni toca RDS.
+
+```powershell
+git clone https://github.com/Moy-Gz04/vehiculo-iot-control.git C:\vehiculo_iot_control   # la primera vez
+cd C:\vehiculo_iot_control; git pull                                                     # para actualizar
+```
+
+La carpeta se puede cambiar con la variable `PLATAFORMA_DIR`; si no existe, `/plataforma` simplemente no se publica.
